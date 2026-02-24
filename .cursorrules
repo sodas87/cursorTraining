@@ -1,0 +1,37 @@
+# ShopCursor Workshop - Cursor Rules
+
+## Project Context
+This is a 2-day Cursor IDE training workshop with a sample e-commerce app called "ShopCursor".
+The app has a Java Spring Boot backend and a React TypeScript frontend.
+
+## Tech Stack
+- Backend: Java 17, Spring Boot 3.2, H2 in-memory database, JPA/Hibernate
+- Frontend: React 18, TypeScript, Vite, plain CSS
+- Testing: JUnit 5 (backend), Playwright (E2E)
+
+## Coding Standards
+
+### Java (Backend)
+- Use Java 17 features (records, text blocks, pattern matching)
+- Follow Spring Boot conventions for REST controllers
+- Use constructor injection (not @Autowired on fields)
+- Return ResponseEntity from controllers
+- Keep services thin - business logic only
+
+### TypeScript (Frontend)
+- Use functional components with hooks
+- Prefer interfaces over types for object shapes
+- Use async/await over .then() chains
+- Keep components under 150 lines
+- Co-locate component CSS files
+
+### General
+- Use descriptive variable names
+- Write meaningful commit messages
+- Keep functions focused on a single responsibility
+- Prefer early returns to reduce nesting
+
+## Workshop Notes
+- Some files contain INTENTIONAL code smells for refactoring exercises
+- Files marked with "// WORKSHOP: Code smell" comments are meant to be improved
+- Labs have starter/ and solution/ directories - don't peek at solutions early!

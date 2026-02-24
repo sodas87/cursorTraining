@@ -1,0 +1,107 @@
+.order-confirmation {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.confirmation-header {
+  margin-bottom: 2rem;
+}
+
+.check-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 50%;
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.confirmation-header h1 {
+  color: #1a1a2e;
+  margin: 0.5rem 0;
+}
+
+.confirmation-header p {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+.order-details {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.order-details h2 {
+  color: #1a1a2e;
+  margin: 0 0 0.5rem;
+}
+
+.order-status {
+  color: #4caf50;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.order-items-list {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 1rem;
+}
+
+.order-item-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  color: #666;
+}
+
+.order-total-row {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  border-top: 2px solid #f0f0f0;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #1a1a2e;
+}
+
+.shipping-info {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f0f0f0;
+}
+
+.shipping-info h3 {
+  margin: 0 0 0.5rem;
+  color: #1a1a2e;
+}
+
+.shipping-info p {
+  margin: 0.25rem 0;
+  color: #666;
+}
+
+.back-to-shop-btn {
+  display: inline-block;
+  background-color: #e94560;
+  color: white;
+  text-decoration: none;
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.back-to-shop-btn:hover {
+  background-color: #c73652;
+}
