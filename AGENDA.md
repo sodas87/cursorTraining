@@ -9,7 +9,7 @@
 | 9:00 - 9:30 | **Welcome & Setup** | Introductions, verify setup, workshop overview |
 | 9:30 - 10:45 | **Session 1: AI Fundamentals** | Prompt engineering, zero-shot vs few-shot, chain-of-thought |
 | 10:45 - 11:00 | *Break* | |
-| 11:00 - 12:15 | **Session 2: Cursor IDE Deep Dive** | Tab completion, Cmd+K, Chat, Composer, @ references |
+| 11:00 - 12:15 | **Session 2: Cursor IDE Deep Dive** | Tab, Cmd+K, Chat, Composer, Agent Mode, Subagents |
 | 12:15 - 1:15 | *Lunch* | |
 
 ### Afternoon
@@ -30,7 +30,7 @@
 | Time | Session | Description |
 |------|---------|-------------|
 | 9:00 - 9:15 | **Day 2 Kickoff** | Recap Day 1, Day 2 overview |
-| 9:15 - 10:30 | **Session 3: MCP Architecture** | What is MCP, configure servers, build a demo MCP server |
+| 9:15 - 10:30 | **Session 3: MCP, Skills & Commands** | MCP servers, custom slash commands, Skills, Project Rules |
 | 10:30 - 10:45 | *Break* | |
 | 10:45 - 12:00 | **Session 4: Playwright + MCP** | AI-generated E2E tests, Playwright MCP, test debugging |
 | 12:00 - 1:00 | *Lunch* | |
@@ -39,7 +39,7 @@
 
 | Time | Session | Description |
 |------|---------|-------------|
-| 1:00 - 2:15 | **Session 5: AI Governance** | Code review, security, anti-patterns, .cursorrules |
+| 1:00 - 2:15 | **Session 5: AI Governance** | BugBot, code review, security, anti-patterns, Project Rules |
 | 2:15 - 2:30 | *Break* | |
 | 2:30 - 4:00 | **Day 2 Lab: E2E Testing** | Complete checkout tests, generate edge case tests |
 | 4:00 - 4:30 | **Workshop Wrap-up** | Final review, resources, Q&A |

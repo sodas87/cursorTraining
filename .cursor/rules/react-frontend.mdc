@@ -1,0 +1,39 @@
+---
+description: React TypeScript frontend coding standards
+globs: ["frontend/**/*.tsx", "frontend/**/*.ts", "frontend/**/*.css"]
+---
+
+# React Frontend Rules
+
+## Language & Framework
+- React 18 with TypeScript
+- Vite for build tooling
+- Plain CSS (no Tailwind, no CSS-in-JS)
+- React Router for navigation
+
+## Components
+- Use functional components with hooks
+- Keep components under 150 lines
+- Co-locate CSS files with components (Component.tsx + Component.css)
+- Use data-testid attributes for E2E test selectors
+
+## TypeScript
+- Prefer interfaces over types for object shapes
+- Define shared types in src/types/index.ts
+- Use strict mode — no any types
+
+## State Management
+- Use React Context for global state (CartContext)
+- Use useState for local component state
+- Use useMemo/useCallback to prevent unnecessary re-renders
+- Extract complex state logic into custom hooks (src/hooks/)
+
+## API Layer
+- All API calls go through src/api/client.ts
+- Use async/await over .then() chains
+- Handle loading and error states in every data-fetching component
+
+## Styling
+- Use BEM-like class naming (.component-name, .component-name__element)
+- Keep styles scoped to their component
+- Use CSS custom properties for shared values (colors, spacing)

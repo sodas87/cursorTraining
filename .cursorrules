@@ -1,4 +1,8 @@
 # ShopCursor Workshop - Cursor Rules
+#
+# NOTE: This file is supported but DEPRECATED in Cursor 2.0+.
+# Prefer Project Rules in .cursor/rules/*.mdc for more control.
+# See .cursor/rules/ for the migrated rules with auto-attachment by file type.
 
 ## Project Context
 This is a 2-day Cursor IDE training workshop with a sample e-commerce app called "ShopCursor".

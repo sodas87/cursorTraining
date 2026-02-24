@@ -633,11 +633,62 @@ public class UserController extends BaseController<User, Long> {
 - [ ] Inconsistent naming conventions
 - [ ] Magic numbers and hardcoded values
 
-## Exercise 4: .cursorrules Best Practices
+## Exercise 4: Project Rules & .cursorrules Best Practices
 
-Create effective `.cursorrules` to guide Cursor toward better code generation.
+Cursor 2.0 introduced **Project Rules** (`.cursor/rules/*.mdc`) as the recommended replacement for the legacy `.cursorrules` file. This exercise covers both.
 
-### Sample .cursorrules
+### Project Rules vs .cursorrules
+
+| Feature | `.cursorrules` (Legacy) | `.cursor/rules/*.mdc` (New) |
+|---------|------------------------|----------------------------|
+| Location | Project root | `.cursor/rules/` directory |
+| Scope | Entire project | Per-file via glob patterns |
+| Auto-attach | Always applied | Only when matching files are referenced |
+| Format | Plain Markdown | MDC (Markdown Component) with frontmatter |
+| Granularity | One file for everything | Separate files per concern |
+
+### MDC File Format
+
+```markdown
+---
+description: When this rule applies (shown to Agent)
+globs: ["backend/**/*.java"]    # Auto-attach to matching files
+---
+
+# Rule content here
+Your coding standards and instructions...
+```
+
+### Task: Create Project Rules
+
+Explore the existing rules in `.cursor/rules/`:
+- `java-backend.mdc` — Java/Spring Boot standards (auto-attached to .java files)
+- `react-frontend.mdc` — React/TypeScript standards (auto-attached to .tsx/.ts files)
+- `workshop.mdc` — Workshop context (applied to all files)
+
+### Exercise: Create a Security Rule
+
+Create `.cursor/rules/security.mdc`:
+
+```markdown
+---
+description: Security standards for all code
+globs: ["**/*.java", "**/*.tsx", "**/*.ts"]
+---
+
+# Security Rules
+
+- NEVER use string concatenation in SQL queries
+- ALWAYS use parameterized queries or JPA
+- ALWAYS hash passwords with BCrypt
+- NEVER hardcode secrets or API keys
+- ALWAYS validate and sanitize user input
+- Use @PreAuthorize for endpoint security
+```
+
+### Legacy .cursorrules
+
+The legacy `.cursorrules` file still works but is a single file for everything. Here's an example:
 
 Create `.cursorrules` in your project root:
 

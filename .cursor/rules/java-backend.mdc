@@ -1,0 +1,37 @@
+---
+description: Java Spring Boot backend coding standards
+globs: ["backend/**/*.java"]
+---
+
+# Java Backend Rules
+
+## Language & Framework
+- Java 17 with Spring Boot 3.2
+- Use Java 17 features: records, text blocks, pattern matching, sealed classes
+- H2 in-memory database with JPA/Hibernate
+
+## Dependency Injection
+- Use constructor injection (not @Autowired on fields)
+- Mark dependencies as final
+
+## Controllers
+- Return ResponseEntity<T> from all endpoints
+- Use @PathVariable and @RequestParam with descriptive names
+- Add @Valid for request body validation
+- Follow REST naming conventions (/api/resource, plural nouns)
+
+## Services
+- Keep services thin — business logic only
+- Use @Transactional for write operations
+- Throw specific exceptions (ResourceNotFoundException, IllegalArgumentException)
+- Never return null — use Optional or throw
+
+## Error Handling
+- Use the GlobalExceptionHandler for consistent error responses
+- Error messages must be descriptive and user-friendly
+- Never expose stack traces to the client
+
+## Testing
+- Use @SpringBootTest + @AutoConfigureMockMvc for integration tests
+- Use descriptive test method names: shouldDoSomethingWhenCondition()
+- Test happy path, error cases, and edge cases

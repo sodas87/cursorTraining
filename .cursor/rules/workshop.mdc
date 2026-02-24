@@ -1,0 +1,30 @@
+---
+description: Workshop-specific rules and context
+globs: ["**"]
+---
+
+# ShopCursor Workshop Context
+
+## Project Overview
+This is a 2-day Cursor IDE training workshop with a sample e-commerce app called "ShopCursor."
+The app sells developer-themed merchandise (hoodies, mugs, stickers, etc.).
+
+## Intentional Code Smells
+Some files contain INTENTIONAL code smells for refactoring exercises.
+Files marked with `// WORKSHOP: Code smell` comments are meant to be improved during labs.
+Do NOT auto-fix these unless explicitly asked in a lab exercise.
+
+Key files with intentional smells:
+- backend/src/main/java/com/shopcursor/service/CartService.java
+- frontend/src/components/ProductList.tsx
+
+## Lab Structure
+- Labs have starter/ and solution/ directories
+- starter/ contains the initial code participants work with
+- solution/ contains the expected outcome — don't reference these during exercises
+
+## When Generating Code
+- Follow existing patterns in the ShopCursor codebase
+- Use the developer-themed product data (Git Commit Hoodie, 404 Mug, etc.)
+- Keep it simple — this is for learning, not production
+- Add data-testid attributes for Playwright test selectors

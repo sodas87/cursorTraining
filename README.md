@@ -4,8 +4,8 @@ A 2-day hands-on workshop for developers learning to use **Cursor IDE** for AI-a
 
 ## What You'll Learn
 
-- **Day 1**: AI prompt engineering, Cursor IDE features (Tab, Cmd+K, Chat, Composer), refactoring with AI
-- **Day 2**: MCP (Model Context Protocol) architecture, Playwright E2E testing with AI, AI governance & best practices
+- **Day 1**: AI prompt engineering, Cursor IDE features (Tab, Cmd+K, Chat, Composer, Agent Mode, Subagents), refactoring with AI
+- **Day 2**: MCP architecture, custom Skills & Slash Commands, Playwright E2E testing, BugBot, AI governance & Project Rules
 
 ## The App: ShopCursor
 
@@ -57,8 +57,12 @@ cursorTraining/
 ├── README.md                     # This file
 ├── SETUP.md                      # Prerequisites & installation guide
 ├── AGENDA.md                     # Printable 2-day schedule
-├── .cursorrules                  # Workshop coding standards for Cursor
-├── .cursor/mcp.json              # MCP server configurations
+├── .cursorrules                  # Legacy coding standards (deprecated)
+├── .cursor/
+│   ├── mcp.json                  # MCP server configurations
+│   ├── rules/                    # Project Rules (.mdc) — auto-applied standards
+│   ├── commands/                 # Custom slash commands (/review, /add-endpoint)
+│   └── agents/                   # Subagent definitions (refactor-agent)
 │
 ├── backend/                      # Java Spring Boot API
 │   ├── pom.xml
@@ -113,7 +117,8 @@ cursorTraining/
    - Hands-on exercises with real coding scenarios
 
 2. **Session 2 - Cursor IDE Deep Dive** (`labs/day1/session2-cursor-ide/`)
-   - Tab completion, inline editing, chat, composer
+   - Tab completion, inline editing, chat, composer, @ references
+   - Agent Mode, background agents, subagents, checkpoints
    - Practice with the ShopCursor codebase
 
 3. **Lab - Refactor & Enhance** (`labs/day1/lab/`)
@@ -123,18 +128,21 @@ cursorTraining/
 
 ### Day 2: Advanced Tooling
 
-4. **Session 3 - MCP Architecture** (`labs/day2/session3-mcp-architecture/`)
+4. **Session 3 - MCP, Skills & Commands** (`labs/day2/session3-mcp-architecture/`)
    - Understand MCP protocol and ecosystem
    - Configure filesystem and GitHub MCP servers
    - Build a custom MCP server
+   - Create custom slash commands and Skills
 
 5. **Session 4 - Playwright + MCP** (`labs/day2/session4-playwright-mcp/`)
    - Use Playwright MCP for AI-driven test generation
    - Generate and debug E2E tests with Cursor
 
 6. **Session 5 - AI Governance** (`labs/day2/session5-governance/`)
+   - BugBot automated PR review and "Fix in Cursor" workflow
    - Review AI-generated code for quality and security
    - Identify anti-patterns in AI-assisted development
+   - Project Rules best practices
 
 7. **Lab - E2E Testing** (`labs/day2/lab/`)
    - Complete checkout test skeletons
