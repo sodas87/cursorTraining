@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Day 2: Advanced Tooling &amp; Governance &mdash; ShopCursor Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav" id="nav">
+  <div class="container">
+    <div class="nav-brand">Deloitte<span>.</span> Digital</div>
+    <a href="index.html" class="nav-back">&larr; Back to Workshop Home</a>
+  </div>
+</nav>
+
+<!-- ===== PAGE HERO ===== -->
+<section class="page-hero" id="hero">
+  <div class="container">
+    <span class="section-label">DAY 2 &mdash; SESSIONS 3, 4 &amp; 5</span>
+    <h1>Advanced Tooling &amp; Governance</h1>
+    <p>MCP architecture, Figma design-to-code, skills, subagents, Playwright testing with MCP, agent hooks, project rules, and AI code review. This is where Cursor goes from "fancy autocomplete" to a governed engineering platform.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SESSION 3: MCP Architecture, Skills & Commands (9:15 - 10:30)
+     ============================================================ -->
+<section class="section" id="session3">
+  <div class="container">
+    <span class="section-label">SESSION 3 &mdash; 9:15 - 10:30</span>
+    <h2>MCP Architecture, Skills &amp; Commands</h2>
+
+    <!-- 1. MCP What and Why -->
+    <div class="talk-track" id="mcp-intro">
+      <h2>Model Context Protocol &mdash; What and Why</h2>
+
+      <div class="talk-point">
+        <h3>The Problem</h3>
+        <p>AI coding tools are isolated. They can see your open files, maybe your repo, but they cannot talk to your database, your issue tracker, your design tool, or your deployment pipeline. Every integration requires custom glue code.</p>
+      </div>
+
+      <div class="narration">
+        <strong>Here is what I would say:</strong> "Before MCP, getting AI to talk to your database or GitHub meant custom glue code for every integration. Every vendor had their own plugin system, their own auth story, their own data format. MCP changes that. Think of it as <em>USB-C for AI tooling</em> &mdash; one standard port that everything plugs into."
+      </div>
+
+      <div class="talk-point">
+        <h3>MCP as "Plugins for AI"</h3>
+        <p>The Model Context Protocol is an open standard (by Anthropic) that provides a standardized way to connect AI assistants to external data sources and tools. Instead of building bespoke integrations, you configure a server and the AI discovers what it can do.</p>
+      </div>
+
+      <div class="diagram">
++------------------+       +------------------+       +------------------+       +---------------------+
+|                  |       |                  |       |                  |       |                     |
+|   Cursor IDE     | &lt;---&gt; |   MCP Client     | &lt;---&gt; |   MCP Server     | &lt;---&gt; |  External Services  |
+|   (AI Agent)     |       |   (built-in)     |       |   (configured)   |       |  GitHub, DB, Figma  |
+|                  |       |                  |       |                  |       |  Filesystem, etc.   |
++------------------+       +------------------+       +------------------+       +---------------------+
+      </div>
+
+      <div class="talk-point">
+        <h3>Three Primitives</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Tools</h3>
+            <p>Functions the AI can <strong>call</strong>. Like "create a GitHub issue" or "run a SQL query". The AI decides when and how to invoke them.</p>
+          </div>
+          <div class="card">
+            <h3>Resources</h3>
+            <p>Data the AI can <strong>read</strong>. Think database schemas, file contents, API documentation. Pulled in as context on demand.</p>
+          </div>
+          <div class="card">
+            <h3>Prompts</h3>
+            <p>Reusable <strong>templates</strong> that combine instructions with context. Pre-built workflows the user or AI can trigger.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Configuring MCP Servers -->
+    <div class="talk-track" id="mcp-config">
+      <h2>Configuring MCP Servers</h2>
+
+      <div class="talk-point">
+        <h3>The Configuration File</h3>
+        <p>MCP servers are configured in <code>.cursor/mcp.json</code> at your project root. Cursor reads this on startup and connects to each server.</p>
+      </div>
+
+      <div class="code-block">
+<span class="comment">// .cursor/mcp.json</span>
+{
+  <span class="string">"mcpServers"</span>: {
+    <span class="string">"filesystem"</span>: {
+      <span class="string">"command"</span>: <span class="string">"npx"</span>,
+      <span class="string">"args"</span>: [<span class="string">"-y"</span>, <span class="string">"@modelcontextprotocol/server-filesystem"</span>, <span class="string">"/path/to/project"</span>]
+    },
+    <span class="string">"github"</span>: {
+      <span class="string">"command"</span>: <span class="string">"npx"</span>,
+      <span class="string">"args"</span>: [<span class="string">"-y"</span>, <span class="string">"@modelcontextprotocol/server-github"</span>],
+      <span class="string">"env"</span>: {
+        <span class="string">"GITHUB_PERSONAL_ACCESS_TOKEN"</span>: <span class="string">"ghp_..."</span>
+      }
+    },
+    <span class="string">"postgres"</span>: {
+      <span class="string">"command"</span>: <span class="string">"npx"</span>,
+      <span class="string">"args"</span>: [<span class="string">"-y"</span>, <span class="string">"@modelcontextprotocol/server-postgres"</span>, <span class="string">"postgresql://localhost/mydb"</span>]
+    }
+  }
+}
+      </div>
+
+      <div class="talk-point">
+        <h3>Common MCP Servers</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Server</th>
+              <th>What It Does</th>
+              <th>Package</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Filesystem</strong></td>
+              <td>Read/write files outside the workspace</td>
+              <td><code>@modelcontextprotocol/server-filesystem</code></td>
+            </tr>
+            <tr>
+              <td><strong>GitHub</strong></td>
+              <td>Issues, PRs, repos, code search</td>
+              <td><code>@modelcontextprotocol/server-github</code></td>
+            </tr>
+            <tr>
+              <td><strong>Playwright</strong></td>
+              <td>Browser automation and testing</td>
+              <td><code>@playwright/mcp</code></td>
+            </tr>
+            <tr>
+              <td><strong>Postgres</strong></td>
+              <td>Query databases, inspect schemas</td>
+              <td><code>@modelcontextprotocol/server-postgres</code></td>
+            </tr>
+            <tr>
+              <td><strong>Memory</strong></td>
+              <td>Persistent key-value memory for the AI</td>
+              <td><code>@modelcontextprotocol/server-memory</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-insight">
+        <h4>Pro Tip</h4>
+        <p>Check MCP status any time with <kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> then type "MCP: Show Status". This shows which servers are connected, which tools are available, and any errors.</p>
+      </div>
+    </div>
+
+    <!-- 3. Figma MCP -->
+    <div class="talk-track" id="figma-mcp">
+      <h2>Figma MCP &mdash; Design to Code</h2>
+
+      <div class="narration">
+        <strong>Here is what I would say:</strong> "Figma MCP is where design-to-code stops being a hand-off and starts being a conversation. Instead of a designer exporting a spec and a developer squinting at pixels, the AI agent <em>reads the design directly</em> and generates matching components. The Figma file becomes a live source of truth."
+      </div>
+
+      <div class="talk-point">
+        <h3>What Figma MCP Enables</h3>
+        <ul>
+          <li><strong>Extract design context</strong> &mdash; AI reads colors, typography, spacing, layout from Figma frames</li>
+          <li><strong>Generate code from frames</strong> &mdash; Copy a Figma frame URL, paste it into the Cursor agent, get a matching React component</li>
+          <li><strong>Code Connect</strong> &mdash; Map Figma components to your existing codebase components so the AI reuses your design system instead of generating from scratch</li>
+        </ul>
+      </div>
+
+      <div class="talk-point">
+        <h3>Two Server Options</h3>
+        <div class="two-col">
+          <div class="card">
+            <h3>Remote Server (Recommended)</h3>
+            <p>Connects to Figma's hosted MCP endpoint. No local install required. Works with any OS.</p>
+            <div class="code-block">
+<span class="comment">// .cursor/mcp.json</span>
+{
+  <span class="string">"mcpServers"</span>: {
+    <span class="string">"figma"</span>: {
+      <span class="string">"url"</span>: <span class="string">"https://mcp.figma.com/mcp"</span>
+    }
+  }
+}
+            </div>
+          </div>
+          <div class="card">
+            <h3>Desktop Server</h3>
+            <p>Runs locally via the Figma desktop app. Requires Figma desktop to be running. Better for offline use or enterprise environments.</p>
+            <div class="code-block">
+<span class="comment">// .cursor/mcp.json</span>
+{
+  <span class="string">"mcpServers"</span>: {
+    <span class="string">"figma"</span>: {
+      <span class="string">"command"</span>: <span class="string">"npx"</span>,
+      <span class="string">"args"</span>: [
+        <span class="string">"-y"</span>,
+        <span class="string">"figma-developer-mcp"</span>,
+        <span class="string">"--stdio"</span>
+      ]
+    }
+  }
+}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>The Workflow</h3>
+        <ol class="step-list">
+          <li>
+            <h4>Open your Figma design</h4>
+            <p>Navigate to the frame or component you want to implement.</p>
+          </li>
+          <li>
+            <h4>Copy the frame URL</h4>
+            <p>Right-click the frame in Figma and select "Copy link". This gives you a URL like <code>https://figma.com/design/FILE_KEY/...?node-id=123-456</code>.</p>
+          </li>
+          <li>
+            <h4>Paste into Cursor Agent</h4>
+            <p>In Cursor's agent chat, paste the URL and describe what you want: "Generate a React component matching this Figma frame using our design system tokens."</p>
+          </li>
+          <li>
+            <h4>AI reads the design and generates code</h4>
+            <p>The agent calls the Figma MCP tools to extract layout, styles, and content, then produces a component that matches the design.</p>
+          </li>
+        </ol>
+      </div>
+
+      <div class="talk-point">
+        <h3>Best Practices</h3>
+        <ul>
+          <li><strong>Clean Figma files</strong> &mdash; use Auto Layout, name your layers, keep structure tidy. The AI reads your layer names.</li>
+          <li><strong>Design system hygiene</strong> &mdash; use shared styles and components in Figma so the AI can map them to your code tokens.</li>
+          <li><strong>Code Connect</strong> &mdash; set up component mappings so the AI generates <code>&lt;Button variant="primary"&gt;</code> instead of raw HTML with inline styles.</li>
+          <li><strong>Frame-level prompts</strong> &mdash; point at specific frames, not entire pages. The more focused the context, the better the output.</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-warning">
+        <h4>Plan Requirements</h4>
+        <p>Figma MCP requires a Full or Dev seat. Call limits: <strong>Professional plan = 200 calls/day</strong>, <strong>Enterprise plan = 600 calls/day</strong>. Free and Starter plans do not have MCP access.</p>
+      </div>
+
+      <div class="callout callout-demo">
+        <h4>Live Demo</h4>
+        <p>Let's connect Figma MCP and generate a component from a design. We will copy a product card frame URL from Figma, paste it into Cursor, and watch the agent produce a matching React component.</p>
+      </div>
+    </div>
+
+    <!-- 4. Custom Slash Commands -->
+    <div class="talk-track" id="commands">
+      <h2>Custom Slash Commands</h2>
+
+      <div class="talk-point">
+        <h3>What They Are</h3>
+        <p>Plain markdown files stored in <code>.cursor/commands/</code>. Each file becomes a slash command you can invoke in the agent chat. The filename (minus extension) becomes the command name.</p>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <h4>File Structure</h4>
+          <div class="code-block">
+.cursor/
+  commands/
+    review.md        <span class="comment"># /review</span>
+    add-endpoint.md  <span class="comment"># /add-endpoint</span>
+    fix-types.md     <span class="comment"># /fix-types</span>
+          </div>
+        </div>
+        <div>
+          <h4>Example: /review</h4>
+          <div class="code-block">
+<span class="comment"># .cursor/commands/review.md</span>
+
+Review the selected code for:
+
+1. <span class="keyword">Security</span> issues (SQL injection, XSS, auth)
+2. <span class="keyword">Performance</span> (N+1 queries, memory leaks)
+3. <span class="keyword">Readability</span> (naming, complexity, DRY)
+4. <span class="keyword">Testing</span> gaps
+
+Be specific. Cite line numbers. Suggest fixes.
+          </div>
+        </div>
+      </div>
+
+      <div class="narration">
+        <strong>Here is what I would say:</strong> "Commands are the simplest primitive. One file, one action. If you find yourself typing the same prompt over and over, turn it into a command. It takes 30 seconds and your whole team gets it via version control."
+      </div>
+    </div>
+
+    <!-- 5. Skills with SKILL.md -->
+    <div class="talk-track" id="skills">
+      <h2>Skills with SKILL.md</h2>
+
+      <div class="talk-point">
+        <h3>How Skills Differ from Commands</h3>
+        <p>Commands are single actions. Skills are <strong>multi-step workflows</strong> with supporting files. A skill can include shell scripts, templates, validation logic, and step-by-step instructions for the agent to follow.</p>
+      </div>
+
+      <div class="code-block">
+<span class="comment"># .cursor/skills/add-api-endpoint/SKILL.md</span>
+
+---
+<span class="keyword">name</span>: add-api-endpoint
+<span class="keyword">description</span>: Scaffold a new REST endpoint with controller, service, repository, and tests
+---
+
+<span class="comment"># Add API Endpoint</span>
+
+## Steps
+
+1. Ask the user for the <span class="type">resource name</span> (e.g., "Order")
+2. Create the JPA entity in <span class="string">`backend/src/main/java/models/`</span>
+3. Create the repository interface
+4. Create the service class with CRUD methods
+5. Create the REST controller with standard endpoints
+6. Create the unit test file
+7. Run <span class="string">`./mvnw compile`</span> to verify
+8. Report what was created
+
+## Templates
+Use the template files in this skill's directory for consistent formatting.
+      </div>
+
+      <div class="talk-point">
+        <h3>Supporting Files</h3>
+        <p>Skills can include anything in their directory &mdash; shell scripts, code templates, configuration files. The agent uses these as context when executing the skill.</p>
+        <div class="code-block">
+.cursor/skills/add-api-endpoint/
+  SKILL.md                  <span class="comment"># The skill definition</span>
+  templates/
+    Entity.java.template    <span class="comment"># JPA entity boilerplate</span>
+    Controller.java.template
+    Service.java.template
+  scripts/
+    validate.sh             <span class="comment"># Post-creation validation</span>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="callout callout-insight">
+          <h4>Create Skills Interactively</h4>
+          <p>Use <code>/create-skill</code> in Cursor's agent chat. It walks you through naming, describing, and scaffolding a new skill directory.</p>
+        </div>
+        <div class="callout callout-insight">
+          <h4>Migrate Existing Commands</h4>
+          <p>Already have complex commands that should be skills? Use <code>/migrate-to-skills</code> to convert them. It preserves your prompt content and adds the YAML frontmatter.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6. Custom Subagents -->
+    <div class="talk-track" id="subagents">
+      <h2>Custom Subagents</h2>
+
+      <div class="talk-point">
+        <h3>What Are Subagents?</h3>
+        <p>Specialized AI agents that the main agent can delegate to. Each subagent has its own personality, permissions, and model configuration. Defined as markdown files in <code>.cursor/agents/</code>.</p>
+      </div>
+
+      <div class="code-block">
+<span class="comment"># .cursor/agents/security-reviewer.md</span>
+
+---
+<span class="keyword">name</span>: security-reviewer
+<span class="keyword">description</span>: Reviews code changes for security vulnerabilities, OWASP Top 10, and auth issues
+<span class="keyword">model</span>: claude-sonnet
+<span class="keyword">readonly</span>: <span class="type">true</span>
+<span class="keyword">is_background</span>: <span class="type">false</span>
+---
+
+You are a security-focused code reviewer. Analyze all code changes for:
+
+- SQL injection and parameterized query usage
+- XSS vulnerabilities in frontend code
+- Authentication and authorization gaps
+- Secrets exposure (API keys, passwords in code)
+- Input validation and sanitization
+- CSRF protection
+
+Never approve code with known security issues. Be specific about line numbers and remediation.
+      </div>
+
+      <div class="talk-point">
+        <h3>YAML Frontmatter Fields</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Field</th>
+              <th>Type</th>
+              <th>Purpose</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>name</code></td>
+              <td>string</td>
+              <td>Identifier, used for invocation</td>
+            </tr>
+            <tr>
+              <td><code>description</code></td>
+              <td>string</td>
+              <td>What this agent does. The main agent reads this to decide when to delegate.</td>
+            </tr>
+            <tr>
+              <td><code>model</code></td>
+              <td>string</td>
+              <td>Which LLM model to use (e.g., <code>claude-sonnet</code>, <code>gpt-4o</code>)</td>
+            </tr>
+            <tr>
+              <td><code>readonly</code></td>
+              <td>boolean</td>
+              <td>If <code>true</code>, the subagent cannot modify files &mdash; analysis only</td>
+            </tr>
+            <tr>
+              <td><code>is_background</code></td>
+              <td>boolean</td>
+              <td>If <code>true</code>, runs in an isolated cloud environment with git worktree</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="talk-point">
+        <h3>Auto-Delegation &amp; Built-in Subagents</h3>
+        <p>The main agent reads each subagent's <code>description</code> and automatically delegates when a task matches. You can also explicitly invoke with <code>/agent-name</code>.</p>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Explore</h3>
+            <p>Built-in. Searches and reads code across the repo. Read-only. Great for understanding unfamiliar codebases.</p>
+          </div>
+          <div class="card">
+            <h3>Bash</h3>
+            <p>Built-in. Executes shell commands. Used for builds, tests, package installs, and system operations.</p>
+          </div>
+          <div class="card">
+            <h3>Browser</h3>
+            <p>Built-in. Navigates web pages, takes screenshots, interacts with UI. Powers visual testing and web research.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-insight">
+        <h4>Parallel Execution &amp; Isolation</h4>
+        <p>Background subagents (<code>is_background: true</code>) run in parallel using <strong>git worktree isolation</strong>. Each gets its own branch and working directory so they cannot conflict with each other or your main workspace. Up to 8 background agents can run simultaneously.</p>
+      </div>
+    </div>
+
+    <!-- 7. Plugins & Marketplace -->
+    <div class="talk-track" id="plugins">
+      <h2>Plugins &amp; Marketplace</h2>
+
+      <div class="talk-point">
+        <h3>What Plugins Bundle</h3>
+        <p>A plugin is a distribution package that can include <strong>any combination</strong> of Cursor primitives:</p>
+        <ul>
+          <li>Skills &mdash; multi-step workflows</li>
+          <li>Subagents &mdash; specialized agents</li>
+          <li>MCP servers &mdash; external tool connections</li>
+          <li>Hooks &mdash; lifecycle guardrails</li>
+          <li>Rules &mdash; coding standards</li>
+        </ul>
+      </div>
+
+      <div class="talk-point">
+        <h3>Installing Plugins</h3>
+        <p>Install from the marketplace UI or via <code>/add-plugin</code> in the agent chat. Plugins are scoped to the project and version-controlled.</p>
+      </div>
+
+      <div class="talk-point">
+        <h3>Partner Ecosystem</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Amplitude</h3>
+            <p>Analytics event tracking</p>
+          </div>
+          <div class="card">
+            <h3>AWS</h3>
+            <p>Cloud infrastructure management</p>
+          </div>
+          <div class="card">
+            <h3>Figma</h3>
+            <p>Design-to-code workflows</p>
+          </div>
+          <div class="card">
+            <h3>Linear</h3>
+            <p>Issue tracking integration</p>
+          </div>
+          <div class="card">
+            <h3>Stripe</h3>
+            <p>Payment implementation</p>
+          </div>
+          <div class="card">
+            <h3>Datadog</h3>
+            <p>Monitoring and observability</p>
+          </div>
+          <div class="card">
+            <h3>GitLab</h3>
+            <p>CI/CD and repo management</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-insight">
+        <h4>Team Plugin Marketplaces</h4>
+        <p>Enterprise teams can create <strong>internal plugin marketplaces</strong> to distribute company-specific skills, rules, and integrations. This is how you standardize AI-assisted workflows across an organization.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SESSION 4: Playwright + MCP Testing (10:45 - 12:00)
+     ============================================================ -->
+<section class="section white-bg" id="session4">
+  <div class="container">
+    <span class="section-label">SESSION 4 &mdash; 10:45 - 12:00</span>
+    <h2>Playwright + MCP Testing</h2>
+
+    <!-- 8. Playwright MCP -->
+    <div class="talk-track" id="playwright-mcp">
+      <h2>Playwright MCP for AI-Driven Testing</h2>
+
+      <div class="narration">
+        <strong>Here is what I would say:</strong> "Playwright MCP gives the AI agent a real browser. Not a simulated one, not a screenshot &mdash; an actual Chromium instance it can navigate, click, type into, and inspect. You describe what you want tested, and the agent writes and runs the test in one shot."
+      </div>
+
+      <div class="talk-point">
+        <h3>What Playwright MCP Adds</h3>
+        <p>With the Playwright MCP server connected, the AI gains browser automation tools: navigate to URLs, click elements, fill forms, take screenshots, assert on page content. These are exposed as MCP tools the agent can call during conversation.</p>
+      </div>
+
+      <div class="talk-point">
+        <h3>Configuration</h3>
+        <div class="code-block">
+<span class="comment">// .cursor/mcp.json</span>
+{
+  <span class="string">"mcpServers"</span>: {
+    <span class="string">"playwright"</span>: {
+      <span class="string">"command"</span>: <span class="string">"npx"</span>,
+      <span class="string">"args"</span>: [<span class="string">"-y"</span>, <span class="string">"@playwright/mcp"</span>]
+    }
+  }
+}
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>The Workflow</h3>
+        <ol class="step-list">
+          <li>
+            <h4>Describe the test scenario</h4>
+            <p>"Test that a user can add a product to the cart and see the correct total at checkout."</p>
+          </li>
+          <li>
+            <h4>Agent writes the Playwright test</h4>
+            <p>The AI generates a full <code>.spec.ts</code> file using your Page Object Model, <code>data-testid</code> selectors, and assertion patterns.</p>
+          </li>
+          <li>
+            <h4>Agent runs the test</h4>
+            <p>The agent executes <code>npx playwright test</code> and reports results. If it fails, the agent reads the error output and iterates.</p>
+          </li>
+        </ol>
+      </div>
+
+      <div class="talk-point">
+        <h3>Page Object Model Pattern</h3>
+        <p>The Page Object Model (POM) keeps selectors and page interactions in reusable classes. This is the pattern we follow in ShopCursor's E2E tests:</p>
+        <div class="code-block">
+<span class="comment">// e2e/pages/ProductPage.ts</span>
+<span class="keyword">export class</span> <span class="type">ProductPage</span> {
+  <span class="keyword">constructor</span>(<span class="keyword">private</span> page: <span class="type">Page</span>) {}
+
+  <span class="keyword">async</span> goto() {
+    <span class="keyword">await</span> <span class="keyword">this</span>.page.goto(<span class="string">'/products'</span>);
+  }
+
+  <span class="keyword">async</span> addToCart(productName: <span class="type">string</span>) {
+    <span class="keyword">const</span> card = <span class="keyword">this</span>.page.locator(<span class="string">`[data-testid="product-card"]`</span>)
+      .filter({ hasText: productName });
+    <span class="keyword">await</span> card.locator(<span class="string">'[data-testid="add-to-cart"]'</span>).click();
+  }
+
+  <span class="keyword">async</span> getCartCount() {
+    <span class="keyword">return</span> <span class="keyword">this</span>.page.locator(<span class="string">'[data-testid="cart-count"]'</span>).textContent();
+  }
+}
+        </div>
+      </div>
+    </div>
+
+    <!-- 9. Generating and Debugging E2E Tests -->
+    <div class="talk-track" id="e2e-tests">
+      <h2>Generating and Debugging E2E Tests</h2>
+
+      <div class="talk-point">
+        <h3>AI-Generated Tests from Natural Language</h3>
+        <p>Instead of writing E2E tests by hand, describe what you want tested. The AI produces idiomatic Playwright code that follows your project conventions.</p>
+        <div class="two-col">
+          <div>
+            <h4>You Say</h4>
+            <div class="code-block">
+"Write an E2E test that:
+1. Goes to the product page
+2. Adds the Git Commit Hoodie to cart
+3. Navigates to the cart
+4. Verifies the item appears
+5. Updates quantity to 2
+6. Verifies the total updates"
+            </div>
+          </div>
+          <div>
+            <h4>AI Produces</h4>
+            <div class="code-block">
+<span class="keyword">test</span>(<span class="string">'cart quantity update'</span>, <span class="keyword">async</span> ({ page }) => {
+  <span class="keyword">const</span> productPage = <span class="keyword">new</span> <span class="type">ProductPage</span>(page);
+  <span class="keyword">const</span> cartPage = <span class="keyword">new</span> <span class="type">CartPage</span>(page);
+
+  <span class="keyword">await</span> productPage.goto();
+  <span class="keyword">await</span> productPage.addToCart(<span class="string">'Git Commit Hoodie'</span>);
+  <span class="keyword">await</span> cartPage.goto();
+
+  <span class="keyword">await</span> expect(cartPage.itemRow(<span class="string">'Git Commit Hoodie'</span>))
+    .toBeVisible();
+  <span class="keyword">await</span> cartPage.updateQuantity(<span class="string">'Git Commit Hoodie'</span>, 2);
+  <span class="keyword">await</span> expect(cartPage.total())
+    .toContainText(<span class="string">'$79.98'</span>);
+});
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Using data-testid Selectors</h3>
+        <p>Always prefer <code>data-testid</code> attributes over CSS classes or text content. They are stable across refactors and make tests resilient to UI changes.</p>
+        <div class="code-block">
+<span class="comment">&lt;!-- In your React component --&gt;</span>
+&lt;button <span class="keyword">data-testid</span>=<span class="string">"add-to-cart"</span>&gt;Add to Cart&lt;/button&gt;
+
+<span class="comment">// In your Playwright test</span>
+<span class="keyword">await</span> page.locator(<span class="string">'[data-testid="add-to-cart"]'</span>).click();
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Debugging Failing Tests with Cursor</h3>
+        <ul>
+          <li><strong>Paste the error output</strong> into Cursor chat &mdash; the AI reads the stack trace and suggests fixes</li>
+          <li><strong>Use trace viewer</strong> &mdash; <code>npx playwright show-trace trace.zip</code> for step-by-step screenshots</li>
+          <li><strong>Ask the agent to add waits</strong> &mdash; most flaky tests need <code>waitForSelector</code> or <code>waitForResponse</code></li>
+          <li><strong>Run headed mode</strong> &mdash; <code>npx playwright test --headed</code> to watch the browser in real time</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-demo">
+        <h4>Live Demo</h4>
+        <p>Generate a checkout flow test from a description. We will describe the complete checkout journey in plain English and have the agent produce, run, and debug the test.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SESSION 5: AI Governance & Hooks (1:00 - 2:15)
+     ============================================================ -->
+<section class="section" id="session5">
+  <div class="container">
+    <span class="section-label">SESSION 5 &mdash; 1:00 - 2:15</span>
+    <h2>AI Governance &amp; Hooks</h2>
+
+    <!-- 10. Agent Hooks for Governance -->
+    <div class="talk-track" id="hooks">
+      <h2>Agent Hooks for Governance</h2>
+
+      <div class="narration">
+        <strong>Here is what I would say:</strong> "Hooks are your safety net. The AI agent is powerful, but unchecked power is a liability. Hooks let you inject guardrails at every stage &mdash; before a file is read, after a file is edited, before a shell command runs. Think of them as middleware for agent actions."
+      </div>
+
+      <div class="talk-point">
+        <h3>Configuration</h3>
+        <p>Hooks are defined in <code>.cursor/hooks.json</code>. Each hook binds a script to a lifecycle event.</p>
+        <div class="code-block">
+<span class="comment">// .cursor/hooks.json</span>
+{
+  <span class="string">"version"</span>: 1,
+  <span class="string">"hooks"</span>: {
+    <span class="string">"afterFileEdit"</span>: [{
+      <span class="string">"command"</span>: <span class="string">".cursor/hooks/format.sh"</span>,
+      <span class="string">"timeout"</span>: 10,
+      <span class="string">"failClosed"</span>: <span class="keyword">false</span>
+    }],
+    <span class="string">"beforeShellExecution"</span>: [{
+      <span class="string">"command"</span>: <span class="string">".cursor/hooks/block-dangerous.sh"</span>,
+      <span class="string">"timeout"</span>: 5,
+      <span class="string">"failClosed"</span>: <span class="keyword">true</span>
+    }],
+    <span class="string">"beforeReadFile"</span>: [{
+      <span class="string">"command"</span>: <span class="string">".cursor/hooks/redact-secrets.sh"</span>,
+      <span class="string">"matcher"</span>: <span class="string">"**/.env*"</span>,
+      <span class="string">"timeout"</span>: 5,
+      <span class="string">"failClosed"</span>: <span class="keyword">true</span>
+    }]
+  }
+}
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Lifecycle Events</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>When It Fires</th>
+              <th>Use Case</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>afterFileEdit</code></td>
+              <td>After the agent modifies any file</td>
+              <td>Auto-format, lint, validate</td>
+            </tr>
+            <tr>
+              <td><code>beforeShellExecution</code></td>
+              <td>Before the agent runs a terminal command</td>
+              <td>Block dangerous commands</td>
+            </tr>
+            <tr>
+              <td><code>beforeReadFile</code></td>
+              <td>Before the agent reads a file into context</td>
+              <td>Redact secrets, filter sensitive data</td>
+            </tr>
+            <tr>
+              <td><code>sessionStart</code></td>
+              <td>When an agent session begins</td>
+              <td>Audit logging, setup</td>
+            </tr>
+            <tr>
+              <td><code>sessionStop</code></td>
+              <td>When an agent session ends</td>
+              <td>Cleanup, final audit entry</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="talk-point">
+        <h3>Hook Responses</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h3><code>allow</code></h3>
+            <p>Let the action proceed. The hook ran successfully and found no issues.</p>
+          </div>
+          <div class="card">
+            <h3><code>deny</code></h3>
+            <p>Block the action entirely. The agent is told the action was denied and why.</p>
+          </div>
+          <div class="card">
+            <h3><code>ask</code></h3>
+            <p>Pause and ask the user for approval. The hook provides context about what it found.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Configuration Options</h3>
+        <ul>
+          <li><code>timeout</code> &mdash; Max seconds the hook script can run before being killed</li>
+          <li><code>failClosed</code> &mdash; If <code>true</code>, a hook timeout or error <strong>blocks</strong> the action. If <code>false</code>, the action proceeds.</li>
+          <li><code>matcher</code> &mdash; Glob pattern to limit which files trigger the hook</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-warning">
+        <h4>Priority Order</h4>
+        <p>Hooks are evaluated in priority order: <strong>Enterprise &rarr; Team &rarr; Project &rarr; User</strong>. Enterprise hooks cannot be overridden by project-level hooks. This is how organizations enforce mandatory governance.</p>
+      </div>
+    </div>
+
+    <!-- 11. Practical Hook Examples -->
+    <div class="talk-track" id="hook-examples">
+      <h2>Practical Hook Examples</h2>
+
+      <div class="talk-point">
+        <h3>Auto-Format After Edits</h3>
+        <p>Run Prettier or your formatter automatically after every file the agent touches.</p>
+        <div class="code-block">
+<span class="comment">#!/bin/bash</span>
+<span class="comment"># .cursor/hooks/format.sh</span>
+<span class="comment"># Receives the edited file path as $1</span>
+
+FILE=<span class="string">"$1"</span>
+
+<span class="keyword">case</span> <span class="string">"$FILE"</span> <span class="keyword">in</span>
+  *.ts|*.tsx|*.js|*.jsx|*.json|*.css)
+    npx prettier --write <span class="string">"$FILE"</span>
+    <span class="keyword">echo</span> <span class="string">'{"action": "allow", "message": "Formatted with Prettier"}'</span>
+    ;;
+  *.java)
+    <span class="comment"># Use google-java-format or spotless</span>
+    ./mvnw spotless:apply -q
+    <span class="keyword">echo</span> <span class="string">'{"action": "allow", "message": "Formatted Java code"}'</span>
+    ;;
+  *)
+    <span class="keyword">echo</span> <span class="string">'{"action": "allow"}'</span>
+    ;;
+<span class="keyword">esac</span>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Block Dangerous Commands</h3>
+        <p>Prevent the agent from running destructive shell commands.</p>
+        <div class="code-block">
+<span class="comment">#!/bin/bash</span>
+<span class="comment"># .cursor/hooks/block-dangerous.sh</span>
+<span class="comment"># Receives the command as $1</span>
+
+CMD=<span class="string">"$1"</span>
+
+<span class="comment"># Block destructive patterns</span>
+<span class="keyword">if</span> <span class="keyword">echo</span> <span class="string">"$CMD"</span> | grep -qE <span class="string">'rm -rf /|drop database|git push.*--force|:(){ :|:& };:'</span>; <span class="keyword">then</span>
+  <span class="keyword">echo</span> <span class="string">'{"action": "deny", "message": "Blocked: destructive command detected"}'</span>
+  <span class="keyword">exit</span> 0
+<span class="keyword">fi</span>
+
+<span class="comment"># Flag production-touching commands for approval</span>
+<span class="keyword">if</span> <span class="keyword">echo</span> <span class="string">"$CMD"</span> | grep -qE <span class="string">'prod|production|deploy'</span>; <span class="keyword">then</span>
+  <span class="keyword">echo</span> <span class="string">'{"action": "ask", "message": "This command references production. Proceed?"}'</span>
+  <span class="keyword">exit</span> 0
+<span class="keyword">fi</span>
+
+<span class="keyword">echo</span> <span class="string">'{"action": "allow"}'</span>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div>
+          <h4>Secrets Redaction</h4>
+          <div class="code-block">
+<span class="comment">#!/bin/bash</span>
+<span class="comment"># .cursor/hooks/redact-secrets.sh</span>
+<span class="comment"># Redact .env values before LLM sees them</span>
+
+FILE=<span class="string">"$1"</span>
+REDACTED=$(sed -E <span class="string">'s/(=).+/=\[REDACTED\]/'</span> <span class="string">"$FILE"</span>)
+
+<span class="keyword">echo</span> <span class="string">"{\"action\": \"allow\", \"content\": \"$REDACTED\"}"</span>
+          </div>
+        </div>
+        <div>
+          <h4>Audit Logging</h4>
+          <div class="code-block">
+<span class="comment">#!/bin/bash</span>
+<span class="comment"># .cursor/hooks/audit-log.sh</span>
+<span class="comment"># Log all shell commands the agent runs</span>
+
+CMD=<span class="string">"$1"</span>
+TIMESTAMP=$(date -u +<span class="string">"%Y-%m-%dT%H:%M:%SZ"</span>)
+USER=$(whoami)
+
+<span class="keyword">echo</span> <span class="string">"$TIMESTAMP | $USER | $CMD"</span> >> .cursor/audit.log
+
+<span class="keyword">echo</span> <span class="string">'{"action": "allow"}'</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12. Project Rules for Quality -->
+    <div class="talk-track" id="rules">
+      <h2>Project Rules for Quality</h2>
+
+      <div class="talk-point">
+        <h3>What Are Rules?</h3>
+        <p>Rules are persistent instructions that shape how the AI writes code in your project. Defined in <code>.cursor/rules/*.mdc</code> with YAML frontmatter that controls when they activate.</p>
+      </div>
+
+      <div class="code-block">
+<span class="comment"># .cursor/rules/java-standards.mdc</span>
+
+---
+<span class="keyword">description</span>: Java coding standards for the ShopCursor backend
+<span class="keyword">globs</span>: [<span class="string">"backend/**/*.java"</span>]
+---
+
+## Java Standards
+
+- Use constructor injection, never field injection with @Autowired
+- Return Optional&lt;T&gt; from repository methods, never null
+- Use @Valid on request body parameters
+- Log at appropriate levels: ERROR for failures, INFO for business events, DEBUG for diagnostics
+- Write unit tests for all service methods
+- Use descriptive variable names, not single letters
+      </div>
+
+      <div class="talk-point">
+        <h3>Four Activation Modes</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Mode</th>
+              <th>Frontmatter</th>
+              <th>Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Always Apply</strong></td>
+              <td><code>alwaysApply: true</code></td>
+              <td>Included in every prompt, every time. Use sparingly.</td>
+            </tr>
+            <tr>
+              <td><strong>Intelligent</strong></td>
+              <td><code>description: "..."</code> only</td>
+              <td>The agent reads the description and decides if it is relevant to the current task.</td>
+            </tr>
+            <tr>
+              <td><strong>Glob-based</strong></td>
+              <td><code>globs: ["**/*.java"]</code></td>
+              <td>Automatically included when working with files that match the pattern.</td>
+            </tr>
+            <tr>
+              <td><strong>Manual</strong></td>
+              <td>No auto-trigger fields</td>
+              <td>Only activated when the user explicitly @-mentions the rule in chat.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-insight">
+        <h4>Create Rules Interactively</h4>
+        <p>Use <code>/create-rule</code> in the agent chat. It walks you through choosing a name, mode, and content for the rule, then writes the <code>.mdc</code> file for you.</p>
+      </div>
+
+      <div class="talk-point">
+        <h3>Layered Governance: Rules + Hooks + Subagent Readonly</h3>
+        <p>These three primitives combine into a layered governance model:</p>
+        <ol class="step-list">
+          <li>
+            <h4>Rules</h4>
+            <p><strong>Prevention:</strong> Tell the AI how to write code correctly in the first place. Standards are embedded in every prompt.</p>
+          </li>
+          <li>
+            <h4>Hooks</h4>
+            <p><strong>Enforcement:</strong> Validate after the fact. Auto-format edited files, block dangerous commands, redact secrets. The safety net.</p>
+          </li>
+          <li>
+            <h4>Subagent Readonly</h4>
+            <p><strong>Isolation:</strong> Some agents should only analyze, never modify. Set <code>readonly: true</code> to ensure a reviewer subagent cannot accidentally change code.</p>
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- 12b. Security Settings & Data Leakage Prevention -->
+    <div class="talk-track" id="security-settings">
+      <h2>Security Settings &amp; Data Leakage Prevention</h2>
+
+      <div class="narration">
+        <strong>Here is what I would say:</strong> "Everything we have covered so far is about securing the <em>code the AI writes</em>. But there is a second, equally important question: <strong>what data are you sending to the AI?</strong> Every prompt, every file the agent reads, every terminal output &mdash; all of it leaves your machine and travels to an LLM provider. If you are working on proprietary code, client projects, or anything with PII, you need to understand and control that data flow."
+      </div>
+
+      <div class="talk-point">
+        <h3>What Data Leaves Your Machine?</h3>
+        <p>When you use Cursor, the following data may be sent to external servers:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Data Type</th>
+              <th>When It Is Sent</th>
+              <th>Where It Goes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Code in open files</td>
+              <td>Every prompt, autocomplete, Cmd+K</td>
+              <td>LLM provider (OpenAI, Anthropic, or Cursor API)</td>
+            </tr>
+            <tr>
+              <td>Codebase index</td>
+              <td>When indexing is enabled</td>
+              <td>Cursor&rsquo;s servers (embeddings)</td>
+            </tr>
+            <tr>
+              <td>Terminal output</td>
+              <td>Agent mode shell commands</td>
+              <td>LLM provider</td>
+            </tr>
+            <tr>
+              <td>File contents</td>
+              <td><code>@file</code> references, agent reads</td>
+              <td>LLM provider</td>
+            </tr>
+            <tr>
+              <td>Error messages &amp; stack traces</td>
+              <td>Debugging prompts</td>
+              <td>LLM provider</td>
+            </tr>
+            <tr>
+              <td>Chat history</td>
+              <td>Ongoing conversation context</td>
+              <td>LLM provider</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-warning">
+        <h4>The Core Risk</h4>
+        <p>Proprietary source code, API keys, database credentials, PII, and internal business logic can all leak to third-party servers through normal Cursor usage. This is not a bug &mdash; it is how AI coding assistants work. Your job is to control what gets sent.</p>
+      </div>
+
+      <div class="talk-point">
+        <h3>Privacy Mode</h3>
+        <p>Cursor&rsquo;s most important security setting. Found in <strong>Settings &rarr; Privacy</strong>.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Privacy Mode: OFF</strong> (default)</td>
+              <td>Code snippets <em>may</em> be stored by LLM providers for service improvement</td>
+            </tr>
+            <tr>
+              <td><strong>Privacy Mode: ON</strong></td>
+              <td>Code is sent for inference only &mdash; <strong>not stored, not used for training</strong></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout callout-insight">
+          <h4>Best Practice</h4>
+          <p><strong>Always enable Privacy Mode</strong> for proprietary or client code. With Privacy Mode on, Cursor states that no code is retained by any third party. Enable via Settings &rarr; Privacy &rarr; toggle ON, or set <code>"cursor.privacy.mode": true</code> in settings.</p>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Codebase Indexing</h3>
+        <p>When enabled, Cursor sends file contents to its servers to build a semantic search index for <code>@codebase</code> queries.</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>What Happens</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Indexing ON</strong></td>
+              <td>Files are chunked, embedded, and stored on Cursor&rsquo;s servers</td>
+            </tr>
+            <tr>
+              <td><strong>Indexing OFF</strong></td>
+              <td>No codebase data leaves your machine (but <code>@codebase</code> will not work)</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>For repositories containing sensitive IP or customer data, <strong>disable indexing entirely</strong> in Settings &rarr; Features &rarr; Codebase Indexing.</p>
+      </div>
+
+      <div class="talk-point">
+        <h3>Telemetry</h3>
+        <p>Controls whether usage analytics and crash reports are sent to Cursor.</p>
+        <ul>
+          <li>Disable in Settings &rarr; Privacy &rarr; toggle telemetry OFF</li>
+          <li>Or set <code>"telemetry.telemetryLevel": "off"</code> in settings</li>
+          <li>Required for SOC 2, HIPAA, and other compliance frameworks</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 12c. .cursorignore & Indexing Ignore -->
+    <div class="talk-track" id="cursorignore">
+      <h2><code>.cursorignore</code> &mdash; Your Most Important Defense</h2>
+
+      <div class="narration">
+        <strong>Here is what I would say:</strong> "If Privacy Mode is the switch, <code>.cursorignore</code> is the scalpel. It tells Cursor: <em>never read this file, never index it, never send it to any LLM, period</em>. This is your single most effective control against data leakage."
+      </div>
+
+      <div class="talk-point">
+        <h3><code>.cursorignore</code> vs <code>.cursorindexingignore</code></h3>
+        <table>
+          <thead>
+            <tr>
+              <th>File</th>
+              <th>LLM Sees It?</th>
+              <th>Indexed for @codebase?</th>
+              <th>Use For</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>.cursorignore</code></td>
+              <td>Never</td>
+              <td>Never</td>
+              <td>Secrets, credentials, PII, proprietary algorithms</td>
+            </tr>
+            <tr>
+              <td><code>.cursorindexingignore</code></td>
+              <td>Yes (if opened)</td>
+              <td>Never</td>
+              <td>Large build artifacts, binaries, generated files</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="talk-point">
+        <h3>Recommended <code>.cursorignore</code></h3>
+        <div class="code-block">
+<span class="comment"># Secrets and credentials</span>
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.jks
+credentials.json
+service-account.json
+**/secrets/
+
+<span class="comment"># Infrastructure</span>
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+
+<span class="comment"># Production configs</span>
+**/application-prod.*
+**/application-staging.*
+
+<span class="comment"># Client / proprietary data</span>
+**/data/customers/
+**/data/exports/
+**/fixtures/real-data/
+
+<span class="comment"># MCP config (may contain API tokens)</span>
+.cursor/mcp.json
+
+<span class="comment"># Internal documentation</span>
+docs/internal/
+docs/architecture/threat-model*
+        </div>
+      </div>
+
+      <div class="callout callout-insight">
+        <h4>Commit It to Source Control</h4>
+        <p>Always commit <code>.cursorignore</code> to your repository so every team member gets the same protection. Treat it like <code>.gitignore</code> &mdash; it is a shared security boundary.</p>
+      </div>
+    </div>
+
+    <!-- 12d. MCP & Agent Mode Security -->
+    <div class="talk-track" id="mcp-agent-security">
+      <h2>MCP &amp; Agent Mode Security</h2>
+
+      <div class="narration">
+        <strong>Here is what I would say:</strong> "MCP servers give the agent superpowers &mdash; it can read your filesystem, call GitHub APIs, query databases. But every tool you grant is an expansion of the attack surface. And in Agent mode, the AI runs commands autonomously. You need to think about what you are allowing it to access."
+      </div>
+
+      <div class="talk-point">
+        <h3>MCP Server Risks</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Token Leakage</h3>
+            <p>API tokens hardcoded in <code>.cursor/mcp.json</code> can appear in error messages sent to the LLM.</p>
+          </div>
+          <div class="card">
+            <h3>Over-Permissioned Tools</h3>
+            <p>A filesystem MCP with access to <code>~/</code> can read <code>~/.ssh/</code>, <code>~/.aws/</code>, and other sensitive directories.</p>
+          </div>
+          <div class="card">
+            <h3>Unreviewed Actions</h3>
+            <p>The agent can call MCP tools that modify external systems &mdash; creating PRs, sending messages, altering databases.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>MCP Best Practices</h3>
+        <ol class="step-list">
+          <li>
+            <h4>Scope Filesystem Access Narrowly</h4>
+            <p>Only grant access to the directories the agent needs. Never use <code>~/</code> or <code>/</code>.</p>
+            <div class="code-block">
+<span class="comment">// Good: scoped to project source directories</span>
+<span class="string">"args"</span>: [<span class="string">"-y"</span>, <span class="string">"@modelcontextprotocol/server-filesystem"</span>,
+         <span class="string">"./backend/src"</span>, <span class="string">"./frontend/src"</span>]
+
+<span class="comment">// Bad: access to entire home directory</span>
+<span class="string">"args"</span>: [<span class="string">"-y"</span>, <span class="string">"@modelcontextprotocol/server-filesystem"</span>, <span class="string">"~/"</span>]
+            </div>
+          </li>
+          <li>
+            <h4>Use Environment Variables for Tokens</h4>
+            <p>Never hardcode API keys in <code>mcp.json</code>. Reference environment variables instead.</p>
+            <div class="code-block">
+<span class="comment">// Good: token from environment</span>
+<span class="string">"env"</span>: { <span class="string">"GITHUB_TOKEN"</span>: <span class="string">"${GITHUB_TOKEN}"</span> }
+
+<span class="comment">// Bad: token in plain text in a committed file</span>
+<span class="string">"env"</span>: { <span class="string">"GITHUB_TOKEN"</span>: <span class="string">"ghp_abc123..."</span> }
+            </div>
+          </li>
+          <li>
+            <h4>Audit MCP Tool Calls</h4>
+            <p>Use a hook on <code>beforeMCPExecution</code> to log every MCP tool invocation for compliance.</p>
+          </li>
+          <li>
+            <h4>Review Third-Party MCP Servers</h4>
+            <p>Read the source code of any community MCP server before adding it. Verify what data it accesses and where it sends it.</p>
+          </li>
+        </ol>
+      </div>
+
+      <div class="talk-point">
+        <h3>Agent Mode Permission Settings</h3>
+        <p>In <strong>Settings &rarr; Features &rarr; Agent</strong>, control how much autonomy the agent has:</p>
+        <table>
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>Behavior</th>
+              <th>Risk Level</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Always allow</strong></td>
+              <td>Agent runs commands without asking</td>
+              <td style="color: #e51515; font-weight: bold;">High</td>
+            </tr>
+            <tr>
+              <td><strong>Ask for approval</strong></td>
+              <td>Agent pauses for your confirmation before shell commands</td>
+              <td style="color: #046A38; font-weight: bold;">Recommended</td>
+            </tr>
+            <tr>
+              <td><strong>Never allow</strong></td>
+              <td>Agent cannot run shell commands at all</td>
+              <td>Safest, but limits capability</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-warning">
+        <h4>Review Every Command</h4>
+        <p>Even with "Ask for approval", do not blindly click "Allow". Read the command. Watch for <code>curl</code> with tokens in URLs, <code>git push</code> to unexpected remotes, <code>npm install</code> of unknown packages, and database commands against production.</p>
+      </div>
+    </div>
+
+    <!-- 12e. Data Leakage Scenarios & Team Checklist -->
+    <div class="talk-track" id="data-leakage">
+      <h2>Common Data Leakage Scenarios</h2>
+
+      <div class="talk-point">
+        <h3>How Leaks Happen</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>How It Happens</th>
+              <th>Prevention</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Secrets in autocomplete</td>
+              <td>Cursor reads <code>.env</code> to provide context</td>
+              <td><code>.cursorignore</code></td>
+            </tr>
+            <tr>
+              <td>API key in error message</td>
+              <td>Agent runs a failing <code>curl</code> with token in the URL</td>
+              <td>Secrets redaction hook</td>
+            </tr>
+            <tr>
+              <td>Proprietary algorithm indexed</td>
+              <td>Codebase indexing sends embeddings to Cursor</td>
+              <td><code>.cursorindexingignore</code> or disable indexing</td>
+            </tr>
+            <tr>
+              <td>PII in test fixtures</td>
+              <td>Agent reads <code>fixtures/users.json</code> with real customer data</td>
+              <td><code>.cursorignore</code>, use synthetic data</td>
+            </tr>
+            <tr>
+              <td>Credentials in MCP config</td>
+              <td>Hardcoded tokens in <code>mcp.json</code> visible to the agent</td>
+              <td>Use env vars, add to <code>.cursorignore</code></td>
+            </tr>
+            <tr>
+              <td>Internal docs in prompt</td>
+              <td>Developer pastes confidential document into chat</td>
+              <td>Training &amp; awareness</td>
+            </tr>
+            <tr>
+              <td>Production DB credentials</td>
+              <td>Agent reads <code>application-prod.yml</code></td>
+              <td><code>.cursorignore</code>, separate prod config</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="talk-point">
+        <h3>Team &amp; Enterprise Security Checklist</h3>
+        <div class="two-col">
+          <div>
+            <h4>Before Onboarding</h4>
+            <ul>
+              <li>Enable <strong>Privacy Mode</strong> for all team members</li>
+              <li>Create <code>.cursorignore</code> in every repository</li>
+              <li>Create <code>.cursorindexingignore</code> for build artifacts</li>
+              <li>Audit <code>.cursor/mcp.json</code> for hardcoded secrets</li>
+              <li>Set up <code>block-dangerous.sh</code> hook</li>
+              <li>Set up secrets redaction hook</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Ongoing Governance</h4>
+            <ul>
+              <li>Review agent activity logs periodically</li>
+              <li>Rotate API keys that may have been exposed</li>
+              <li>Disable codebase indexing for sensitive repos</li>
+              <li>Pin MCP server versions (no <code>latest</code>)</li>
+              <li>Educate: never paste secrets or PII into chat</li>
+              <li>Disable telemetry if required by compliance</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Network &amp; Compliance</h3>
+        <ul>
+          <li><strong>Allowlist endpoints:</strong> <code>api2.cursor.sh</code>, <code>api.openai.com</code>, <code>api.anthropic.com</code></li>
+          <li><strong>Proxy LLM traffic</strong> through corporate proxy for logging if required</li>
+          <li><strong>Document data flow:</strong> where code goes, which providers, retention policies</li>
+          <li><strong>Legal review:</strong> Review Cursor&rsquo;s privacy policy and ToS with your compliance team</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-insight">
+        <h4>The Complete Defense Stack</h4>
+        <p><strong>Privacy Mode</strong> (no data retention) + <strong>.cursorignore</strong> (block sensitive files) + <strong>Hooks</strong> (redact secrets, block commands) + <strong>Rules</strong> (guide AI to write secure code) + <strong>Training</strong> (developer awareness). Technical controls alone are not enough &mdash; your team needs to understand the risks.</p>
+      </div>
+    </div>
+
+    <!-- 13. Code Review for AI-Generated Code -->
+    <div class="talk-track" id="code-review">
+      <h2>Code Review for AI-Generated Code</h2>
+
+      <div class="narration">
+        <strong>Here is what I would say:</strong> "Here is the mindset shift: <em>treat AI-generated code like a junior developer's pull request</em>. It is usually correct, often clever, sometimes subtly wrong, and occasionally dangerous. Your job is not to rubber-stamp it &mdash; your job is to review it with the same rigor you would apply to any human-written code."
+      </div>
+
+      <div class="talk-point">
+        <h3>Security Checklist</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h3>SQL Injection</h3>
+            <p>Is the AI using parameterized queries? Or is it concatenating strings into SQL? Check every database call.</p>
+          </div>
+          <div class="card">
+            <h3>Authentication</h3>
+            <p>Are new endpoints protected? Did the AI add proper auth checks? Does it handle token expiry?</p>
+          </div>
+          <div class="card">
+            <h3>Input Validation</h3>
+            <p>Is user input validated and sanitized? Are there length limits, type checks, and allowlist patterns?</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Anti-Patterns to Watch For</h3>
+        <ul>
+          <li><strong>God classes</strong> &mdash; AI loves putting everything in one file. Watch for 500+ line classes.</li>
+          <li><strong>Over-engineering</strong> &mdash; Abstract factory for a feature with one implementation. Three layers of indirection for a simple CRUD.</li>
+          <li><strong>Copy-paste</strong> &mdash; AI sometimes duplicates logic instead of extracting shared methods. Check for near-identical code blocks.</li>
+          <li><strong>Hardcoded values</strong> &mdash; Magic strings, URLs, timeouts baked into code instead of configuration.</li>
+          <li><strong>Missing error handling</strong> &mdash; Happy path works great. What happens when the database is down?</li>
+        </ul>
+      </div>
+
+      <div class="talk-point">
+        <h3>BugBot Automated PR Review</h3>
+        <p>BugBot is Cursor's automated PR reviewer. It runs on every pull request and comments on potential issues.</p>
+        <ul>
+          <li>Scans for security vulnerabilities, anti-patterns, and style violations</li>
+          <li>Provides inline comments on specific lines</li>
+          <li>Includes a "Fix in Cursor" button that opens the issue directly in your IDE with the fix pre-loaded</li>
+          <li>Configurable sensitivity and rule sets per repository</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-warning">
+        <h4>The Reviewer Mindset</h4>
+        <p>Treat AI code like a junior developer's PR. It is usually correct, often clever, sometimes subtly wrong, and occasionally dangerous. Never rubber-stamp. Always review with the same rigor you apply to human-written code. The AI does not know your business domain &mdash; you do.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="page-footer">
+  <div class="container">
+    <div class="footer-logo">Deloitte<span>.</span> Digital</div>
+    <p style="margin: 8px 0;">ShopCursor Workshop &mdash; Day 2: Advanced Tooling &amp; Governance</p>
+    <a href="index.html">&larr; Back to Workshop Home</a>
+  </div>
+</footer>
+
+<!-- ===== PRESENTATION CONTROLS ===== -->
+<div class="pres-controls" id="presControls">
+  <button onclick="presNav(-1)" title="Previous section">&#x25B2;</button>
+  <button onclick="presNav(1)" title="Next section">&#x25BC;</button>
+  <button onclick="togglePresentation()" title="Exit presentation">&#x2715;</button>
+</div>
+
+<script>
+// ===== Presentation Mode =====
+let isPresentationMode = false;
+let currentSection = 0;
+
+function togglePresentation() {
+  isPresentationMode = !isPresentationMode;
+  document.body.classList.toggle('presentation-mode', isPresentationMode);
+
+  if (isPresentationMode) {
+    currentSection = 0;
+    scrollToSection(0);
+    document.addEventListener('keydown', presKeyHandler);
+  } else {
+    document.removeEventListener('keydown', presKeyHandler);
+  }
+}
+
+function getTalkTracks() {
+  return document.querySelectorAll('.page-hero, .talk-track');
+}
+
+function scrollToSection(index) {
+  const sections = getTalkTracks();
+  if (index >= 0 && index < sections.length) {
+    currentSection = index;
+    sections[index].scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function presNav(direction) {
+  const sections = getTalkTracks();
+  const next = currentSection + direction;
+  if (next >= 0 && next < sections.length) {
+    scrollToSection(next);
+  }
+}
+
+function presKeyHandler(e) {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+    e.preventDefault();
+    presNav(1);
+  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+    e.preventDefault();
+    presNav(-1);
+  } else if (e.key === 'Escape') {
+    togglePresentation();
+  }
+}
+</script>
+
+</body>
+</html>

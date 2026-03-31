@@ -1,0 +1,148 @@
+/* ==========================================================================
+   Layout — Grid, Containers, Responsive
+   ========================================================================== */
+
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  color: var(--color-black);
+  background-color: var(--color-white);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+/* -----------------------------------------------------------------------
+   Container
+   ----------------------------------------------------------------------- */
+
+.container {
+  max-width: var(--viewport-desktop);
+  margin: 0 auto;
+  padding: 0 var(--space-10);
+}
+
+.container--narrow {
+  max-width: 960px;
+}
+
+/* -----------------------------------------------------------------------
+   Grid Utilities
+   ----------------------------------------------------------------------- */
+
+.grid {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.grid--2 { grid-template-columns: repeat(2, 1fr); }
+.grid--3 { grid-template-columns: repeat(3, 1fr); }
+.grid--4 { grid-template-columns: repeat(4, 1fr); }
+
+/* -----------------------------------------------------------------------
+   Flex Utilities
+   ----------------------------------------------------------------------- */
+
+.flex { display: flex; }
+.flex--col { flex-direction: column; }
+.flex--center { align-items: center; justify-content: center; }
+.flex--between { justify-content: space-between; }
+.flex--align-center { align-items: center; }
+.flex--gap-sm { gap: var(--space-2); }
+.flex--gap { gap: var(--space-4); }
+.flex--gap-lg { gap: var(--space-8); }
+
+/* -----------------------------------------------------------------------
+   Section Spacing
+   ----------------------------------------------------------------------- */
+
+.section {
+  padding: var(--space-20) 0;
+}
+
+.section--sm {
+  padding: var(--space-12) 0;
+}
+
+/* -----------------------------------------------------------------------
+   Divider
+   ----------------------------------------------------------------------- */
+
+.divider {
+  border: none;
+  border-top: var(--border-width) solid var(--border-color);
+}
+
+/* -----------------------------------------------------------------------
+   Visually Hidden (accessibility)
+   ----------------------------------------------------------------------- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* -----------------------------------------------------------------------
+   Responsive — Mobile (< 768px)
+   ----------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 var(--space-4);
+  }
+
+  .grid--4 { grid-template-columns: repeat(2, 1fr); }
+  .grid--3 { grid-template-columns: repeat(2, 1fr); }
+  .grid--2 { grid-template-columns: 1fr; }
+
+  .hide-mobile { display: none !important; }
+  .show-mobile { display: block !important; }
+}
+
+@media (min-width: 769px) {
+  .hide-desktop { display: none !important; }
+  .show-desktop { display: block !important; }
+}

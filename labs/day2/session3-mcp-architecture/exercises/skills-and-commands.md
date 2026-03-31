@@ -1,25 +1,27 @@
-# Custom Skills & Slash Commands - Hands-on Exercises
+# Custom Skills, Commands & Subagents — Hands-on Exercises
 
 ## Introduction
 
-Cursor supports **custom slash commands** — reusable AI prompts stored as Markdown files in your project. They standardize workflows, enforce team conventions, and automate repetitive tasks. Think of them as "macros for AI."
+Cursor provides several primitives for customizing and extending agent behavior. This session covers:
 
----
+| Primitive | Location | Purpose |
+|-----------|----------|---------|
+| **Commands** | `.cursor/commands/*.md` | Reusable prompt shortcuts (triggered with `/`) |
+| **Skills** | `.cursor/skills/<name>/SKILL.md` | Multi-step procedural workflows with supporting files |
+| **Subagents** | `.cursor/agents/*.md` | Specialized AI agents that run in parallel |
+| **Rules** | `.cursor/rules/*.mdc` | Always-on coding standards (declarative) |
+| **Hooks** | `.cursor/hooks.json` | Scripts that run before/after agent actions |
+| **Plugins** | Marketplace | Bundles of skills + subagents + MCP + hooks + rules |
 
-## How Slash Commands Work
+### Commands vs Skills vs Rules
 
-```
-.cursor/
-├── commands/         # Custom slash commands
-│   ├── review.md     # /review — AI code review
-│   ├── add-endpoint.md  # /add-endpoint — Scaffold REST endpoint
-│   └── test-this.md  # /test-this — Generate tests
-```
-
-- Commands are `.md` files inside `.cursor/commands/`
-- They appear when you type `/` in the Agent input
-- The file content becomes the AI's instruction
-- They can reference project files and use @ mentions
+| Aspect | Commands | Skills | Rules |
+|--------|----------|--------|-------|
+| **When** | On-demand (`/name`) | On-demand (`/name` or `@name`) | Automatic |
+| **Scope** | Single action | Multi-step workflow | Coding standards |
+| **Format** | Plain markdown | `SKILL.md` + optional scripts/files | `.mdc` with frontmatter |
+| **Length** | Short prompts | Longer, procedural | Concise (< 500 lines) |
+| **Best for** | "Do this one thing" | "Here's how to do X step-by-step" | "Always follow these conventions" |
 
 ---
 
@@ -88,62 +90,255 @@ Create a `/test-this` command that writes tests following ShopCursor conventions
 
 ---
 
-## Exercise 3: Create a `/add-feature` Slash Command
+## Exercise 3: Create a Skill
 
 ### Objective
-Build a more complex command that scaffolds a full-stack feature.
+Understand how skills differ from commands and build one.
 
-### Task
-Create a command that generates backend model + repo + service + controller + frontend component.
+### What is a Skill?
+A skill is a **folder** inside `.cursor/skills/` containing a `SKILL.md` file and optionally supporting scripts, templates, or reference files. Skills are for multi-step procedural workflows that are too complex for a single slash command.
 
-### Instructions
+### Skill Format
 
-1. **Create** `.cursor/commands/add-feature.md`:
+```
+.cursor/skills/
+└── my-skill/
+    ├── SKILL.md           # Required — instructions with YAML frontmatter
+    ├── helper-script.sh   # Optional — scripts the agent can run
+    └── template.java      # Optional — reference files
+```
 
-   ```markdown
-   # Scaffold Full-Stack Feature
+**SKILL.md format:**
+```markdown
+---
+description: What this skill does (agent reads this to decide when to apply)
+name: my-skill
+---
 
-   Generate a complete feature across backend and frontend.
+# Skill Title
 
-   ## What I Need From You
-   Provide the feature name and entity fields. Example:
-   "Add a Wishlist feature with fields: userId, productId, addedAt"
+## When to Use
+Describe the situations where this skill applies...
 
-   ## Backend (Java Spring Boot)
-   Create in order:
-   1. Model entity in `backend/src/main/java/com/shopcursor/model/`
-   2. JPA Repository in `backend/src/main/java/com/shopcursor/repository/`
-   3. Service with CRUD operations in `backend/src/main/java/com/shopcursor/service/`
-   4. REST Controller in `backend/src/main/java/com/shopcursor/controller/`
+## Step-by-Step Instructions
+1. First step...
+2. Second step...
 
-   Follow patterns in:
-   - @backend/src/main/java/com/shopcursor/model/Product.java
-   - @backend/src/main/java/com/shopcursor/controller/ProductController.java
+## Conventions
+- Convention 1...
+- Convention 2...
+```
 
-   ## Frontend (React TypeScript)
-   Create:
-   1. TypeScript interface in `frontend/src/types/index.ts`
-   2. API functions in `frontend/src/api/client.ts`
-   3. React component in `frontend/src/components/`
+### Task: Explore the Existing Skill
 
-   Follow patterns in:
-   - @frontend/src/types/index.ts
-   - @frontend/src/api/client.ts
-   - @frontend/src/components/ProductList.tsx
-   ```
+1. **Open** `.cursor/skills/add-feature/SKILL.md` and read the skill definition
 
-2. **Test it:**
+2. **Notice the differences from commands:**
+   - YAML frontmatter with `description` and `name`
+   - "When to Use" section for the agent's context
+   - Multi-step procedural instructions
+   - Lives in a folder (can have supporting files)
+
+3. **Invoke the skill** in Agent:
    ```
    /add-feature Add a ProductReview feature with fields:
    productId (Long), reviewerName (String), rating (int 1-5),
    comment (String), createdAt (LocalDateTime)
    ```
 
-3. **Review** the generated code — it should follow ShopCursor patterns
+4. **Review** the generated code — it should follow ShopCursor patterns across both backend and frontend
+
+### Task: Create Your Own Skill
+
+Create `.cursor/skills/debug-issue/SKILL.md`:
+
+```markdown
+---
+description: Systematically debugs an issue by reproducing it, identifying the root cause, and implementing a fix with tests
+name: debug-issue
+---
+
+# Debug Issue
+
+## When to Use
+When a bug is reported and you need to systematically investigate and fix it.
+
+## Step-by-Step Instructions
+
+1. **Reproduce** — Understand the reported behavior and identify how to trigger it
+2. **Locate** — Find the relevant code using error messages, stack traces, or described behavior
+3. **Root cause** — Identify why the bug occurs (don't just patch symptoms)
+4. **Fix** — Implement the minimal change that addresses the root cause
+5. **Test** — Write a test that fails before the fix and passes after
+6. **Verify** — Run existing tests to ensure nothing else broke
+
+## Conventions
+- Fix the root cause, not the symptom
+- Keep fixes minimal — don't refactor unrelated code
+- Always add a regression test
+- For backend: run `cd backend && ./mvnw test`
+- For frontend: run `cd frontend && npm run build`
+- For E2E: run `cd e2e && npx playwright test`
+```
+
+Test it by describing a bug: `/debug-issue The cart total doesn't update when quantity changes`
 
 ---
 
-## Exercise 4: Team Workflow Commands
+## Exercise 4: Create & Configure Subagents
+
+### Objective
+Understand how subagents work and create a custom one.
+
+### What Are Subagents?
+Subagents are **independent agents** that handle parts of a parent agent's task. They:
+- Run in parallel with their own context
+- Can be configured with custom prompts, models, and permissions
+- Are delegated to automatically based on their `description` or explicitly via `/name`
+
+### Subagent Format
+
+```markdown
+---
+name: agent-name
+description: When to delegate to this agent (be specific!)
+model: inherit          # inherit | fast | specific model ID
+readonly: false         # true = can't write files
+is_background: false    # true = runs in background via git worktree
+---
+
+# Agent prompt instructions here...
+```
+
+**Frontmatter fields:**
+
+| Field | Default | Purpose |
+|-------|---------|---------|
+| `name` | filename | Identifier (lowercase, hyphens) |
+| `description` | — | **Critical** — main agent reads this to decide when to auto-delegate |
+| `model` | `inherit` | `inherit`, `fast`, or specific model ID (e.g., `claude-4-sonnet`) |
+| `readonly` | `false` | Restricts file write permissions |
+| `is_background` | `false` | Runs in background without blocking the main agent |
+
+### Built-in Subagents
+
+Cursor provides three built-in subagents (no configuration needed):
+
+| Subagent | Purpose |
+|----------|---------|
+| **Explore** | Searches and analyzes codebases (uses faster model) |
+| **Bash** | Isolates verbose terminal output from main context |
+| **Browser** | Filters noisy DOM snapshots via MCP tools |
+
+### Task: Explore Existing Subagents
+
+1. **Open** `.cursor/agents/refactor-agent.md` — notice the YAML frontmatter
+2. **Open** `.cursor/agents/verify-agent.md` — notice `readonly: true` and `is_background: true`
+3. **Try delegation** in Agent:
+   - Ask: "Refactor the CartService to extract magic numbers into constants"
+   - The agent should auto-delegate to the refactor-agent based on its description
+
+### Task: Create a Documentation Subagent
+
+Create `.cursor/agents/docs-agent.md`:
+
+```markdown
+---
+name: docs-agent
+description: Generates or updates documentation including JavaDoc, JSDoc, README sections, and API endpoint documentation. Delegates here when documentation needs to be written or updated.
+model: fast
+readonly: false
+is_background: false
+---
+
+# Documentation Agent
+
+## Role
+You are a technical writer for the ShopCursor project.
+
+## Instructions
+When asked to document code:
+
+1. **Read the code** — Understand what it does before writing docs
+2. **Match the style** — Follow existing documentation patterns in the project
+3. **Be concise** — Document the "why", not the "what"
+4. **Include examples** — Show usage for non-obvious APIs
+
+## Formats
+- Java: JavaDoc (`/** */`) with @param, @return, @throws
+- TypeScript: JSDoc (`/** */`) with @param, @returns
+- REST APIs: Include method, path, request/response examples
+- Components: Document props and usage
+
+## What NOT to Do
+- Don't document obvious getters/setters
+- Don't add redundant comments like `// get the product`
+- Don't document internal implementation details in public APIs
+```
+
+### Key Tips for Subagents
+
+- **Descriptions are critical** — Vague descriptions = bad delegation. Be specific about when to use this agent.
+- **Start small** — Begin with 2–3 subagents; add more only when you have clear, distinct use cases.
+- **Parallel = independent** — Only run subagents in parallel when they touch different files. If two agents need the same file, run them sequentially.
+- **Background agents** use git worktrees — they get their own copy of the codebase and merge changes back.
+
+---
+
+## Exercise 5: Migrate Commands to Skills
+
+### Objective
+Understand when to migrate a command to a skill and how to do it.
+
+### When to Migrate
+- Your command has grown beyond a single prompt
+- You need supporting scripts or templates
+- The workflow has multiple distinct steps
+- You want the agent to auto-discover it based on context
+
+### Interactive Migration
+Type `/migrate-to-skills` in Agent chat — Cursor will guide you through converting existing commands.
+
+### Manual Migration
+
+Convert the `/add-endpoint` command to a skill:
+
+1. **Create the skill directory:**
+   ```bash
+   mkdir -p .cursor/skills/add-endpoint
+   ```
+
+2. **Create `.cursor/skills/add-endpoint/SKILL.md`:**
+   ```markdown
+   ---
+   description: Scaffolds a complete REST endpoint with service method, controller mapping, and optional repository query. Includes curl test commands.
+   name: add-endpoint
+   ---
+
+   # Scaffold REST Endpoint
+
+   ## When to Use
+   When adding a new API endpoint to the ShopCursor backend.
+
+   ## Steps
+   1. Add repository query method (if needed)
+   2. Add service method with business logic
+   3. Add controller endpoint returning ResponseEntity
+   4. Suggest curl command for testing
+   5. Suggest test case
+
+   ## Conventions
+   - Return ResponseEntity<T> from controllers
+   - Use constructor injection
+   - Add error handling with ResourceNotFoundException
+   - Follow patterns in ProductController.java and ProductService.java
+   ```
+
+3. **Test both** — The original `/add-endpoint` command and the new `/add-endpoint` skill should both work.
+
+---
+
+## Exercise 6: Team Workflow Commands
 
 ### Objective
 Create commands that enforce team standards.
@@ -171,69 +366,91 @@ Create ONE of the above commands (your choice) and test it on ShopCursor code.
 
 ---
 
-## Exercise 5: Skills with SKILL.md
+## Exercise 7: Rules Refresher
 
 ### Objective
-Understand how SKILL.md files define broader AI capabilities.
+Understand the four rule application modes and create a new rule.
 
-### What is a SKILL.md?
-While slash commands are individual actions, a SKILL.md defines a broader capability with:
-- Custom instructions and persona
-- Multiple related operations
-- Domain-specific knowledge
+### Rule Application Modes
 
-### Example
-Create `.cursor/skills/SKILL.md`:
+| Mode | Frontmatter | When Applied |
+|------|-------------|--------------|
+| **Always Apply** | `alwaysApply: true` | Every chat session |
+| **Apply Intelligently** | `alwaysApply: false` + `description` | Agent decides based on relevance |
+| **Glob-based** | `globs: ["pattern"]` | When matching files are in context |
+| **Manual** | Neither | Only when you `@`-mention the rule |
+
+### Existing Rules in ShopCursor
+
+| Rule | Mode | Applies To |
+|------|------|-----------|
+| `workshop.mdc` | Always Apply | All conversations |
+| `java-backend.mdc` | Glob-based | `backend/**/*.java` |
+| `react-frontend.mdc` | Glob-based | `frontend/**/*.tsx`, `.ts`, `.css` |
+
+### Task: Create a Testing Rule
+
+Create `.cursor/rules/testing.mdc` using `/create-rule` in Agent or manually:
 
 ```markdown
-# ShopCursor Development Skill
+---
+description: Testing standards for backend and E2E tests
+globs: ["**/*Test.java", "**/*test*.java", "e2e/**/*.spec.ts"]
+---
 
-## Persona
-You are a senior developer on the ShopCursor e-commerce team.
+# Testing Rules
 
-## Project Knowledge
-- Backend: Java 17, Spring Boot 3.2, H2 database
-- Frontend: React 18, TypeScript, Vite, plain CSS
-- Testing: JUnit 5 (backend), Playwright (E2E)
-- Database resets on restart (H2 in-memory)
+## Backend (JUnit 5)
+- Use @SpringBootTest + @AutoConfigureMockMvc for integration tests
+- Test method naming: shouldDoSomethingWhenCondition()
+- Test happy path, error cases, and edge cases
+- Use @Transactional for tests that modify data
 
-## Conventions
-- Use constructor injection (not @Autowired)
-- Return ResponseEntity from controllers
-- Use functional React components with hooks
-- Co-locate CSS with components
-- Use data-testid attributes for E2E test selectors
-
-## When Adding Features
-1. Always start with the model/entity
-2. Create repository interface
-3. Implement service with business logic
-4. Add REST controller
-5. Create TypeScript types
-6. Build React components
-7. Add E2E tests
+## E2E (Playwright)
+- Use Page Object Model pattern (pages in e2e/pages/)
+- Use data-testid selectors (not CSS classes or text)
+- Add explicit waits for dynamic content
+- Test user flows, not implementation details
 ```
 
 ---
 
 ## Key Takeaways
 
-| Concept | Location | Scope |
-|---------|----------|-------|
-| **Slash Commands** | `.cursor/commands/*.md` | Individual actions |
-| **Skills** | `.cursor/skills/SKILL.md` | Broader capabilities |
-| **Subagents** | `.cursor/agents/*.md` | Specialized AI agents |
-| **Project Rules** | `.cursor/rules/*.mdc` | Coding standards |
-
 ### The `.cursor/` Ecosystem
 
 ```
 .cursor/
-├── mcp.json          # MCP server configurations
-├── commands/         # Slash commands (/review, /test-this)
-├── rules/            # Project rules (auto-applied coding standards)
-├── agents/           # Subagent definitions
-└── skills/           # Skill definitions
+├── mcp.json              # MCP server configurations
+├── hooks.json            # Agent lifecycle hooks (format, guard, audit)
+├── hooks/                # Hook scripts
+├── commands/             # Slash commands (/review, /test-this)
+├── rules/                # Project rules (auto-applied coding standards)
+├── agents/               # Subagent definitions (refactor, verify, docs)
+├── skills/               # Multi-step workflow skills
+│   └── add-feature/
+│       └── SKILL.md
+└── plugins/              # (Managed by Cursor Marketplace)
 ```
 
-All of these are version-controlled and shared with your team.
+All of these (except plugins) are version-controlled and shared with your team.
+
+### Plugins & The Marketplace
+
+Plugins bundle skills + subagents + MCP servers + hooks + rules into a single installable unit.
+
+- **Install**: Via the Cursor Marketplace or `/add-plugin` command
+- **Available plugins**: Amplitude, AWS, Figma, Linear, Stripe, Datadog, GitLab, PlanetScale, and more
+- **Create your own**: Use the "Create Plugin" plugin from the marketplace
+- **Team distribution**: Private marketplaces for internal plugin sharing
+
+### Decision Guide
+
+| I want to... | Use |
+|--------------|-----|
+| Enforce coding standards automatically | **Rule** (`.cursor/rules/*.mdc`) |
+| Run a quick AI-driven action | **Command** (`.cursor/commands/*.md`) |
+| Define a multi-step workflow | **Skill** (`.cursor/skills/<name>/SKILL.md`) |
+| Delegate specialized work in parallel | **Subagent** (`.cursor/agents/*.md`) |
+| Run scripts before/after agent actions | **Hook** (`.cursor/hooks.json`) |
+| Bundle everything for distribution | **Plugin** (Marketplace) |

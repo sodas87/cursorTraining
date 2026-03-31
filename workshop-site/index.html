@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ShopCursor Workshop — Cursor IDE Training</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,800&display=swap" rel="stylesheet">
+<style>
+/* ===== DD Brand Tokens — Modern Collection Theme 1 ===== */
+:root {
+  --dd-white: #FFFFFF;
+  --dd-offwhite: #F2F2F2;
+  --dd-black: #000000;
+  --dd-body: #4D4D4D;
+  --dd-grey15: #D9D9D9;
+  --dd-green: #046A38;
+  --dd-green6: #86BC25;
+  --dd-green2: #C4D600;
+  --dd-blue2: #62B5E5;
+  --dd-blue5: #005587;
+  --dd-teal3: #6FC2B4;
+  --dd-teal5: #0097A9;
+
+  --font: 'Open Sans', sans-serif;
+  --radius: 12px;
+  --section-pad: 80px 0;
+  --content-max: 1200px;
+}
+
+/* ===== Reset & Base ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font);
+  font-weight: 300;
+  color: var(--dd-body);
+  background: var(--dd-offwhite);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  overflow-x: hidden;
+}
+
+a { color: var(--dd-green); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+.container {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* ===== Typography ===== */
+h1, h2, h3 {
+  color: var(--dd-black);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); }
+h2 { font-size: clamp(1.8rem, 3vw, 2.5rem); margin-bottom: 16px; }
+h3 { font-size: 1.25rem; margin-bottom: 8px; }
+
+.section-label {
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.8rem;
+  color: var(--dd-body);
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* ===== Orb — CSS geometric motif (Modern collection) ===== */
+.orb {
+  width: 400px;
+  height: 400px;
+  border-radius: 50%;
+  position: relative;
+  flex-shrink: 0;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(134,188,37,0.25) 0%, transparent 50%),
+    radial-gradient(circle at 70% 60%, rgba(98,181,229,0.2) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(4,106,56,0.15) 0%, transparent 60%),
+    linear-gradient(135deg, #e8f5e9 0%, #e3f2fd 50%, #f1f8e9 100%);
+  box-shadow:
+    0 0 80px rgba(134,188,37,0.15),
+    0 0 160px rgba(98,181,229,0.1),
+    inset 0 0 100px rgba(255,255,255,0.6);
+  animation: orbFloat 8s ease-in-out infinite;
+}
+
+.orb::before {
+  content: '';
+  position: absolute;
+  inset: 15%;
+  border-radius: 50%;
+  border: 1.5px solid rgba(134,188,37,0.2);
+  animation: orbRotate 20s linear infinite;
+}
+
+.orb::after {
+  content: '';
+  position: absolute;
+  inset: 30%;
+  border-radius: 50%;
+  border: 1px solid rgba(98,181,229,0.15);
+  animation: orbRotate 15s linear infinite reverse;
+}
+
+@keyframes orbFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes orbRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Small decorative orb elements */
+.orb-accent {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(134,188,37,0.2), rgba(98,181,229,0.15));
+  position: absolute;
+  filter: blur(1px);
+  opacity: 0.6;
+}
+
+/* ===== Cover Section ===== */
+.cover {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  background: var(--dd-offwhite);
+  position: relative;
+  overflow: hidden;
+  padding: 60px 0;
+}
+
+.cover .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 60px;
+  width: 100%;
+}
+
+.cover-content {
+  flex: 1;
+  max-width: 600px;
+}
+
+.cover-logo {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--dd-black);
+  margin-bottom: 40px;
+  letter-spacing: 0;
+}
+
+.cover-logo span {
+  color: var(--dd-green6);
+}
+
+.cover h1 {
+  color: var(--dd-green);
+  margin-bottom: 16px;
+}
+
+.cover-subtitle {
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.9rem;
+  color: var(--dd-body);
+  margin-bottom: 24px;
+}
+
+.cover-meta {
+  font-size: 0.95rem;
+  color: var(--dd-body);
+}
+
+/* ===== Navigation ===== */
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--dd-grey15);
+  padding: 0;
+}
+
+.nav .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+}
+
+.nav-brand {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--dd-black);
+}
+
+.nav-brand span { color: var(--dd-green6); }
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+  list-style: none;
+  flex-wrap: wrap;
+}
+
+.nav-links a {
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 400;
+  color: var(--dd-body);
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+
+.nav-links a:hover {
+  background: var(--dd-offwhite);
+  color: var(--dd-black);
+  text-decoration: none;
+}
+
+.nav-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* ===== Buttons ===== */
+.btn {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: var(--dd-green);
+  color: var(--dd-white);
+}
+
+.btn-primary:hover { background: #035530; }
+
+.btn-outline {
+  background: transparent;
+  color: var(--dd-body);
+  border: 1px solid var(--dd-grey15);
+}
+
+.btn-outline:hover {
+  border-color: var(--dd-body);
+  color: var(--dd-black);
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 0.78rem;
+}
+
+/* ===== Section Dividers ===== */
+.divider-section {
+  background: var(--dd-black);
+  color: var(--dd-white);
+  padding: 80px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.divider-section::before {
+  content: '';
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(134,188,37,0.08), transparent 70%);
+  top: -200px;
+  right: -100px;
+}
+
+.divider-section h2 {
+  color: var(--dd-white);
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.divider-section .section-label {
+  color: var(--dd-green6);
+}
+
+.divider-section p {
+  color: rgba(255,255,255,0.7);
+  max-width: 700px;
+}
+
+/* ===== Content Sections ===== */
+.content-section {
+  padding: var(--section-pad);
+  background: var(--dd-offwhite);
+}
+
+.content-section.white-bg {
+  background: var(--dd-white);
+}
+
+/* ===== Session Cards ===== */
+.session-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.session-card {
+  background: var(--dd-white);
+  border-radius: var(--radius);
+  padding: 32px;
+  border: 1px solid var(--dd-grey15);
+  transition: box-shadow 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.content-section.white-bg .session-card {
+  background: var(--dd-offwhite);
+}
+
+.session-card:hover {
+  box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+}
+
+.session-card .session-num {
+  font-weight: 800;
+  font-style: italic;
+  font-size: 3rem;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--dd-black);
+  line-height: 1;
+  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+}
+
+.session-card h3 {
+  font-size: 1.15rem;
+  margin-bottom: 12px;
+}
+
+.session-card .session-time {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--dd-green);
+  margin-bottom: 8px;
+}
+
+.session-card ul {
+  list-style: none;
+  padding: 0;
+}
+
+.session-card li {
+  padding: 4px 0;
+  font-size: 0.9rem;
+  padding-left: 18px;
+  position: relative;
+}
+
+.session-card li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dd-green6);
+}
+
+/* ===== Topic Detail Blocks ===== */
+.topic-block {
+  margin-bottom: 48px;
+}
+
+.topic-block h3 {
+  font-size: 1.3rem;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--dd-green6);
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.deep-dive-link {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--dd-green);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: none;
+}
+
+.deep-dive-link:hover {
+  color: var(--dd-green6);
+  text-decoration: none;
+}
+
+.topic-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+
+.topic-content.single-col {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 768px) {
+  .topic-content { grid-template-columns: 1fr; }
+}
+
+.topic-detail {
+  background: var(--dd-white);
+  border-radius: var(--radius);
+  padding: 24px;
+  border: 1px solid var(--dd-grey15);
+}
+
+.content-section.white-bg .topic-detail {
+  background: var(--dd-offwhite);
+}
+
+.topic-detail h4 {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--dd-black);
+  margin-bottom: 8px;
+}
+
+.topic-detail p, .topic-detail li {
+  font-size: 0.9rem;
+}
+
+.topic-detail ul {
+  padding-left: 20px;
+  margin-top: 8px;
+}
+
+.topic-detail li {
+  margin-bottom: 4px;
+}
+
+/* Code blocks */
+.code-block {
+  background: #1a1a2e;
+  color: #e0e0e0;
+  border-radius: 8px;
+  padding: 16px 20px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.code-block .comment { color: #6a6a8a; }
+.code-block .keyword { color: #86BC25; }
+.code-block .string { color: #62B5E5; }
+
+/* ===== Ecosystem Diagram ===== */
+.ecosystem-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.eco-card {
+  background: var(--dd-white);
+  border-radius: var(--radius);
+  padding: 24px;
+  border: 1px solid var(--dd-grey15);
+  text-align: left;
+  transition: all 0.2s;
+}
+
+.eco-card:hover {
+  border-color: var(--dd-green6);
+  transform: translateY(-2px);
+}
+
+.eco-card .eco-icon {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.eco-card h4 {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--dd-black);
+  margin-bottom: 4px;
+}
+
+.eco-card .eco-tagline {
+  font-size: 0.82rem;
+  color: var(--dd-green);
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.eco-card .eco-desc {
+  font-size: 0.82rem;
+  color: var(--dd-body);
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.eco-card .eco-when {
+  font-size: 0.78rem;
+  color: var(--dd-body);
+  background: var(--dd-offwhite);
+  border-radius: 6px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.eco-card .eco-when strong {
+  color: var(--dd-black);
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.eco-card code {
+  font-size: 0.72rem;
+  background: var(--dd-offwhite);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--dd-green);
+}
+
+/* ===== Comparison Table ===== */
+.comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 24px 0;
+  font-size: 0.88rem;
+}
+
+.comparison-table th {
+  background: var(--dd-black);
+  color: var(--dd-white);
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.comparison-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--dd-grey15);
+}
+
+.comparison-table tr:hover td {
+  background: rgba(134,188,37,0.05);
+}
+
+.comparison-table code {
+  background: var(--dd-offwhite);
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  color: var(--dd-green);
+}
+
+/* ===== API Reference Table ===== */
+.api-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 0.85rem;
+}
+
+.api-table th {
+  background: var(--dd-offwhite);
+  padding: 10px 14px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.8rem;
+  border-bottom: 2px solid var(--dd-grey15);
+}
+
+.api-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--dd-grey15);
+}
+
+.api-table .method {
+  font-weight: 700;
+  font-family: 'SF Mono', monospace;
+  font-size: 0.78rem;
+}
+
+.method-get { color: var(--dd-green); }
+.method-post { color: var(--dd-blue5); }
+.method-put { color: var(--dd-teal5); }
+.method-delete { color: #c62828; }
+
+/* ===== Checklist ===== */
+.checklist-section {
+  padding: var(--section-pad);
+  background: var(--dd-white);
+}
+
+.checklist-group {
+  margin-bottom: 32px;
+}
+
+.checklist-group h3 {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.checklist-progress {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--dd-green);
+  background: rgba(134,188,37,0.1);
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+.checklist-items {
+  list-style: none;
+  padding: 0;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: background 0.15s;
+  cursor: pointer;
+  user-select: none;
+}
+
+.checklist-item:hover {
+  background: var(--dd-offwhite);
+}
+
+.checklist-item input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--dd-grey15);
+  border-radius: 6px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s;
+}
+
+.checklist-item input[type="checkbox"]:checked {
+  background: var(--dd-green);
+  border-color: var(--dd-green);
+}
+
+.checklist-item input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 2px;
+  width: 6px;
+  height: 11px;
+  border: solid var(--dd-white);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.checklist-item.checked .checklist-text {
+  text-decoration: line-through;
+  color: var(--dd-grey15);
+}
+
+.checklist-text {
+  font-size: 0.9rem;
+  transition: all 0.15s;
+}
+
+.checklist-text strong {
+  display: block;
+  font-weight: 600;
+  color: var(--dd-black);
+  font-size: 0.88rem;
+}
+
+.checklist-item.checked .checklist-text strong {
+  color: var(--dd-grey15);
+}
+
+/* Overall progress bar */
+.progress-bar-container {
+  background: var(--dd-grey15);
+  border-radius: 20px;
+  height: 8px;
+  margin: 16px 0 8px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--dd-green), var(--dd-green6));
+  border-radius: 20px;
+  transition: width 0.4s ease;
+  width: 0%;
+}
+
+.progress-text {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--dd-green);
+}
+
+/* ===== Closing Section ===== */
+.closing {
+  background: var(--dd-black);
+  color: var(--dd-white);
+  padding: 100px 0;
+  text-align: center;
+}
+
+.closing h2 { color: var(--dd-white); margin-bottom: 16px; }
+
+.closing p {
+  color: rgba(255,255,255,0.6);
+  max-width: 500px;
+  margin: 0 auto 32px;
+}
+
+.closing-logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--dd-white);
+  margin-bottom: 8px;
+}
+
+.closing-logo span { color: var(--dd-green6); }
+
+.closing-tagline {
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.75rem;
+  color: var(--dd-green6);
+}
+
+/* ===== Presentation Mode ===== */
+body.presentation-mode {
+  font-size: 20px;
+}
+
+body.presentation-mode .nav {
+  display: none;
+}
+
+body.presentation-mode section {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  page-break-after: always;
+}
+
+body.presentation-mode section > .container {
+  width: 100%;
+}
+
+body.presentation-mode .session-grid {
+  grid-template-columns: 1fr 1fr;
+}
+
+body.presentation-mode h1 {
+  font-size: 4rem;
+}
+
+body.presentation-mode h2 {
+  font-size: 3rem;
+}
+
+body.presentation-mode .cover {
+  min-height: 100vh;
+}
+
+/* Presentation controls */
+.pres-controls {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 200;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+body.presentation-mode .pres-controls {
+  opacity: 1;
+}
+
+body.presentation-mode .pres-controls:hover {
+  opacity: 1;
+}
+
+.pres-controls button {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.7);
+  color: white;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.pres-controls button:hover {
+  background: var(--dd-green);
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .cover .container {
+    flex-direction: column-reverse;
+    text-align: center;
+  }
+
+  .orb {
+    width: 250px;
+    height: 250px;
+  }
+
+  .session-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ecosystem-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .nav-links { display: none; }
+}
+
+@media (max-width: 640px) {
+  .ecosystem-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Print */
+@media print {
+  .nav, .pres-controls, .btn { display: none; }
+  section { page-break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<!-- ===== COVER ===== -->
+<section class="cover" id="cover">
+  <div class="container">
+    <div class="cover-content">
+      <div class="cover-logo">Deloitte<span>.</span> Digital</div>
+      <h1>ShopCursor Workshop</h1>
+      <p class="cover-subtitle">CURSOR IDE FOR AI-ASSISTED DEVELOPMENT</p>
+      <p class="cover-meta">
+        2-Day Hands-on Workshop<br>
+        Build, refactor, test, and enhance with AI
+      </p>
+      <div style="margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap;">
+        <button class="btn btn-primary" onclick="togglePresentation()">Presentation Mode</button>
+        <a href="#checklist" class="btn btn-outline">Track Progress</a>
+      </div>
+    </div>
+    <div class="orb"></div>
+  </div>
+</section>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav" id="nav">
+  <div class="container">
+    <div class="nav-brand">Deloitte<span>.</span> Digital</div>
+    <ul class="nav-links">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#day1">Day 1</a></li>
+      <li><a href="#day2">Day 2</a></li>
+      <li><a href="#ecosystem">Ecosystem</a></li>
+      <li><a href="#api">API</a></li>
+      <li><a href="#checklist">Checklist</a></li>
+    </ul>
+    <div class="nav-actions">
+      <button class="btn btn-outline btn-sm" onclick="togglePresentation()">Present</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== OVERVIEW ===== -->
+<section class="content-section" id="overview">
+  <div class="container">
+    <span class="section-label">THE APP</span>
+    <h2>ShopCursor — Developer Merch Store</h2>
+    <p style="max-width: 700px; margin-bottom: 32px;">
+      A full-stack e-commerce application built for learning. Products include the "Git Commit Hoodie", "404 Not Found Mug", "Rubber Duck Debugger", and more.
+    </p>
+
+    <div class="session-grid">
+      <div class="session-card">
+        <div class="session-num">01</div>
+        <h3>Backend</h3>
+        <p class="session-time">Java 17 + Spring Boot 3.2</p>
+        <ul>
+          <li>H2 in-memory database with JPA/Hibernate</li>
+          <li>REST controllers, services, repositories</li>
+          <li>Global exception handling</li>
+          <li>Data seeder for product catalog</li>
+        </ul>
+      </div>
+      <div class="session-card">
+        <div class="session-num">02</div>
+        <h3>Frontend</h3>
+        <p class="session-time">React 18 + TypeScript + Vite</p>
+        <ul>
+          <li>React Router for navigation</li>
+          <li>CartContext for global state</li>
+          <li>Axios API client</li>
+          <li>Plain CSS with BEM naming</li>
+        </ul>
+      </div>
+      <div class="session-card">
+        <div class="session-num">03</div>
+        <h3>E2E Testing</h3>
+        <p class="session-time">Playwright</p>
+        <ul>
+          <li>Page Object Model pattern</li>
+          <li>Product, Cart, Checkout tests</li>
+          <li>data-testid selectors</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="margin-top: 48px;">
+      <span class="section-label">QUICK START</span>
+      <div class="topic-content">
+        <div class="topic-detail">
+          <h4>Terminal 1 — Backend</h4>
+          <div class="code-block">
+            <span class="comment"># Start on port 8080</span><br>
+            <span class="keyword">cd</span> backend<br>
+            ./mvnw spring-boot:run
+          </div>
+        </div>
+        <div class="topic-detail">
+          <h4>Terminal 2 — Frontend</h4>
+          <div class="code-block">
+            <span class="comment"># Start on port 5173</span><br>
+            <span class="keyword">cd</span> frontend<br>
+            npm install && npm run dev
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DAY 1 DIVIDER ===== -->
+<section class="divider-section" id="day1">
+  <div class="container">
+    <span class="section-label">DAY 1</span>
+    <h2>Foundations of AI-Assisted Development</h2>
+    <p>Prompt engineering, Cursor IDE deep dive, and hands-on refactoring with AI.</p>
+  </div>
+</section>
+
+<!-- ===== DAY 1 SESSIONS ===== -->
+<section class="content-section white-bg" id="session1">
+  <div class="container">
+    <!-- Session 1 -->
+    <div class="topic-block">
+      <span class="section-label">SESSION 1 &mdash; 9:30 - 10:45</span>
+      <h3>AI Fundamentals &amp; Prompt Engineering <a href="day1-session1.html" class="deep-dive-link">Deep Dive &rarr;</a></h3>
+      <div class="topic-content">
+        <div class="topic-detail">
+          <h4>Prompting Techniques</h4>
+          <ul>
+            <li><strong>Zero-shot</strong> — Direct instruction, no examples</li>
+            <li><strong>Few-shot</strong> — Provide input/output examples to guide the model</li>
+            <li><strong>Chain-of-thought</strong> — "Think step by step" for complex reasoning</li>
+            <li><strong>Role prompting</strong> — "You are a senior Java developer..."</li>
+          </ul>
+        </div>
+        <div class="topic-detail">
+          <h4>Effective Prompts for Code</h4>
+          <ul>
+            <li>Be specific about language, framework, and patterns</li>
+            <li>Reference existing code with @ mentions</li>
+            <li>Include constraints ("under 150 lines", "no external deps")</li>
+            <li>Provide context about the project architecture</li>
+            <li>Ask for tests alongside implementation</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session 2 -->
+    <div class="topic-block">
+      <span class="section-label">SESSION 2 &mdash; 11:00 - 12:15</span>
+      <h3>Cursor IDE Deep Dive <a href="day1-session2.html" class="deep-dive-link">Deep Dive &rarr;</a></h3>
+      <div class="topic-content">
+        <div class="topic-detail">
+          <h4>Core Features</h4>
+          <ul>
+            <li><strong>Tab</strong> — AI autocomplete (accept with Tab)</li>
+            <li><strong>Cmd+K</strong> — Inline editing with natural language</li>
+            <li><strong>Chat</strong> — Conversational AI with codebase context</li>
+            <li><strong>Composer</strong> — Multi-file editing orchestration</li>
+            <li><strong>@ References</strong> — @file, @folder, @codebase, @web</li>
+          </ul>
+        </div>
+        <div class="topic-detail">
+          <h4>Agent Mode &amp; Subagents</h4>
+          <ul>
+            <li><strong>Agent Mode</strong> — Autonomous multi-step execution</li>
+            <li><strong>Background agents</strong> — Run in isolated cloud environments</li>
+            <li><strong>Subagents</strong> — Specialized parallel agents (Explore, Bash, Browser)</li>
+            <li><strong>Checkpoints</strong> — Revert to any point in agent execution</li>
+            <li>Up to 8 parallel background agents</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lab 1 -->
+    <div class="topic-block">
+      <span class="section-label">DAY 1 LAB &mdash; 1:15 - 3:15</span>
+      <h3>Refactor &amp; Enhance</h3>
+      <div class="topic-content single-col">
+        <div class="topic-detail">
+          <h4>Tasks</h4>
+          <ul>
+            <li><strong>Refactor CartService.java</strong> — Fix god method, magic numbers, poor error handling, code duplication</li>
+            <li><strong>Refactor ProductList.tsx</strong> — Extract custom hooks, separate concerns, remove magic strings</li>
+            <li><strong>Add Wishlist Feature</strong> — Use Composer to scaffold full-stack feature</li>
+          </ul>
+          <p style="margin-top: 12px; font-size: 0.85rem;">
+            Look for <code>// WORKSHOP: Code smell</code> comments in the intentional code smell files.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DAY 2 DIVIDER ===== -->
+<section class="divider-section" id="day2">
+  <div class="container">
+    <span class="section-label">DAY 2</span>
+    <h2>Advanced Tooling &amp; Governance</h2>
+    <p>MCP architecture, skills, subagents, hooks, Playwright testing, and AI governance.</p>
+  </div>
+</section>
+
+<!-- ===== DAY 2 SESSIONS ===== -->
+<section class="content-section" id="session3">
+  <div class="container">
+    <!-- Session 3 -->
+    <div class="topic-block">
+      <span class="section-label">SESSION 3 &mdash; 9:15 - 10:30</span>
+      <h3>MCP, Skills, Commands &amp; Subagents <a href="day2-sessions.html" class="deep-dive-link">Deep Dive &rarr;</a></h3>
+
+      <div class="topic-content" style="margin-bottom: 32px;">
+        <div class="topic-detail">
+          <h4>MCP Architecture</h4>
+          <ul>
+            <li><strong>Model Context Protocol</strong> — Standard for connecting AI to external tools</li>
+            <li>Configured in <code>.cursor/mcp.json</code></li>
+            <li>Filesystem, GitHub, and custom MCP servers</li>
+            <li>JSON-based configuration with dynamic loading</li>
+          </ul>
+        </div>
+        <div class="topic-detail">
+          <h4>Custom Commands</h4>
+          <ul>
+            <li>Plain markdown files in <code>.cursor/commands/</code></li>
+            <li>Invoked with <code>/name</code> in agent chat</li>
+            <li>Single-action prompt shortcuts</li>
+            <li>Examples: <code>/review</code>, <code>/add-endpoint</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="topic-content" style="margin-bottom: 32px;">
+        <div class="topic-detail">
+          <h4>Skills</h4>
+          <ul>
+            <li>Multi-step workflows in <code>.cursor/skills/&lt;name&gt;/SKILL.md</code></li>
+            <li>YAML frontmatter with <code>description</code> and <code>name</code></li>
+            <li>Can include supporting scripts and templates</li>
+            <li>Invoked with <code>/skill-name</code> or <code>@skill-name</code></li>
+            <li>Create interactively with <code>/create-skill</code></li>
+          </ul>
+        </div>
+        <div class="topic-detail">
+          <h4>Subagents</h4>
+          <ul>
+            <li>Specialized agents in <code>.cursor/agents/</code></li>
+            <li>YAML frontmatter: <code>name</code>, <code>description</code>, <code>model</code>, <code>readonly</code>, <code>is_background</code></li>
+            <li>Auto-delegated based on description or explicit <code>/name</code></li>
+            <li>Built-in: Explore, Bash, Browser</li>
+            <li>Background agents use git worktrees for isolation</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session 4 -->
+    <div class="topic-block">
+      <span class="section-label">SESSION 4 &mdash; 10:45 - 12:00</span>
+      <h3>Playwright + MCP Testing <a href="day2-sessions.html#session4" class="deep-dive-link">Deep Dive &rarr;</a></h3>
+      <div class="topic-content">
+        <div class="topic-detail">
+          <h4>AI-Driven Test Generation</h4>
+          <ul>
+            <li>Use Playwright MCP for browser interaction</li>
+            <li>Generate E2E tests from natural language descriptions</li>
+            <li>Page Object Model pattern for maintainability</li>
+            <li>Debug failing tests with AI assistance</li>
+          </ul>
+        </div>
+        <div class="topic-detail">
+          <h4>Running Tests</h4>
+          <div class="code-block">
+            <span class="keyword">cd</span> e2e<br>
+            npx playwright install chromium<br>
+            npx playwright test<br>
+            <span class="comment"># Single file</span><br>
+            npx playwright test tests/cart.spec.ts
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session 5 -->
+    <div class="topic-block">
+      <span class="section-label">SESSION 5 &mdash; 1:00 - 2:15</span>
+      <h3>AI Governance &amp; Hooks <a href="day2-sessions.html#session5" class="deep-dive-link">Deep Dive &rarr;</a></h3>
+      <div class="topic-content" style="margin-bottom: 32px;">
+        <div class="topic-detail">
+          <h4>Code Review for AI-Generated Code</h4>
+          <ul>
+            <li>SQL injection, XSS, and OWASP Top 10 checks</li>
+            <li>Authentication and authorization gaps</li>
+            <li>Anti-patterns: god classes, over-engineering, copy-paste</li>
+            <li>BugBot automated PR review and "Fix in Cursor"</li>
+          </ul>
+        </div>
+        <div class="topic-detail">
+          <h4>Project Rules</h4>
+          <ul>
+            <li><code>.cursor/rules/*.mdc</code> — MDC format with frontmatter</li>
+            <li><strong>Always Apply</strong> — <code>alwaysApply: true</code></li>
+            <li><strong>Glob-based</strong> — <code>globs: ["backend/**/*.java"]</code></li>
+            <li><strong>Intelligent</strong> — Agent decides from description</li>
+            <li><strong>Manual</strong> — User @-mentions the rule</li>
+            <li>Create interactively with <code>/create-rule</code></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="topic-content">
+        <div class="topic-detail">
+          <h4>Agent Hooks</h4>
+          <ul>
+            <li>Configured in <code>.cursor/hooks.json</code></li>
+            <li>Scripts that run before/after agent actions</li>
+            <li><code>afterFileEdit</code> — Auto-format code</li>
+            <li><code>beforeShellExecution</code> — Block dangerous commands</li>
+            <li><code>beforeReadFile</code> — Redact secrets from LLM</li>
+            <li><code>sessionStart/stop</code> — Audit logging</li>
+            <li>Response: <code>allow</code>, <code>deny</code>, or <code>ask</code></li>
+          </ul>
+        </div>
+        <div class="topic-detail">
+          <h4>Hook Configuration</h4>
+          <div class="code-block">
+{<br>
+&nbsp;&nbsp;<span class="string">"version"</span>: 1,<br>
+&nbsp;&nbsp;<span class="string">"hooks"</span>: {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"afterFileEdit"</span>: [{<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"command"</span>: <span class="string">".cursor/hooks/format.sh"</span>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"timeout"</span>: 10,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="string">"failClosed"</span>: <span class="keyword">false</span><br>
+&nbsp;&nbsp;&nbsp;&nbsp;}]<br>
+&nbsp;&nbsp;}<br>
+}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lab 2 -->
+    <div class="topic-block">
+      <span class="section-label">DAY 2 LAB &mdash; 2:30 - 4:00</span>
+      <h3>E2E Testing Lab</h3>
+      <div class="topic-content single-col">
+        <div class="topic-detail">
+          <h4>Tasks</h4>
+          <ul>
+            <li><strong>Complete checkout test skeletons</strong> — Fill in the test implementations in <code>e2e/tests/checkout.spec.ts</code></li>
+            <li><strong>Generate edge case tests</strong> — Use AI to identify and write tests for boundary conditions</li>
+            <li><strong>Debug failing tests</strong> — Use Cursor to diagnose and fix test failures</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CURSOR ECOSYSTEM ===== -->
+<section class="content-section white-bg" id="ecosystem">
+  <div class="container">
+    <span class="section-label">REFERENCE</span>
+    <h2>The .cursor/ Ecosystem</h2>
+    <p style="max-width: 700px; margin-bottom: 16px;">
+      Every primitive is version-controlled and shared with your team. Here's how they fit together.
+    </p>
+
+    <div class="ecosystem-grid">
+      <div class="eco-card">
+        <span class="eco-icon">&#x1F4CB;</span>
+        <h4>Rules</h4>
+        <p class="eco-tagline">Always-on coding standards</p>
+        <p class="eco-desc">Persistent instructions injected into every AI interaction. Define coding conventions, architectural patterns, and project-specific constraints that the agent follows automatically.</p>
+        <div class="eco-when">
+          <strong>When to use</strong>
+          "Always use constructor injection in Spring Boot." "React components must be functional with TypeScript." "Never use var in Java." Any standard the team should follow on every prompt, without remembering to ask.
+        </div>
+        <code>.cursor/rules/*.mdc</code>
+      </div>
+      <div class="eco-card">
+        <span class="eco-icon">&#x26A1;</span>
+        <h4>Commands</h4>
+        <p class="eco-tagline">Quick prompt shortcuts</p>
+        <p class="eco-desc">Single-action prompts triggered by typing <code>/name</code> in chat. Think of them as saved prompts &mdash; one markdown file, one action, no supporting files needed.</p>
+        <div class="eco-when">
+          <strong>When to use</strong>
+          "Review this file for security issues." "Generate a unit test for the selected code." "Explain this error." Any repeatable, single-step AI action you find yourself typing over and over.
+        </div>
+        <code>.cursor/commands/*.md</code>
+      </div>
+      <div class="eco-card">
+        <span class="eco-icon">&#x1F9E0;</span>
+        <h4>Skills</h4>
+        <p class="eco-tagline">Multi-step workflows</p>
+        <p class="eco-desc">Structured, multi-step instructions that guide the agent through a complete workflow. Can include supporting files like templates, scripts, and examples in a dedicated folder.</p>
+        <div class="eco-when">
+          <strong>When to use</strong>
+          "Scaffold a full-stack feature (model &rarr; repo &rarr; service &rarr; controller &rarr; React component)." "Set up a new microservice with all boilerplate." Any multi-step recipe that needs to be done the same way every time.
+        </div>
+        <code>.cursor/skills/*/SKILL.md</code>
+      </div>
+      <div class="eco-card">
+        <span class="eco-icon">&#x1F916;</span>
+        <h4>Subagents</h4>
+        <p class="eco-tagline">Parallel specialist agents</p>
+        <p class="eco-desc">Custom agent personas with specific capabilities and constraints. Can be read-only, run in the background on separate git worktrees, and use faster models for efficiency.</p>
+        <div class="eco-when">
+          <strong>When to use</strong>
+          "Run all tests and report back while I keep coding." "Verify the build in the background." "Explore the codebase and summarize the architecture." Any task you want to delegate to a specialist that works independently or in parallel.
+        </div>
+        <code>.cursor/agents/*.md</code>
+      </div>
+      <div class="eco-card">
+        <span class="eco-icon">&#x1F6A7;</span>
+        <h4>Hooks</h4>
+        <p class="eco-tagline">Lifecycle guardrails</p>
+        <p class="eco-desc">Shell scripts that execute before or after agent actions. They can allow, deny, or prompt for confirmation &mdash; giving you programmatic control over what the agent does.</p>
+        <div class="eco-when">
+          <strong>When to use</strong>
+          "Auto-format every file the agent edits." "Block <code>rm -rf</code> and <code>git push --force</code>." "Log every agent session for compliance." "Redact secrets before the LLM reads a file." Any guardrail that must be enforced, not just suggested.
+        </div>
+        <code>.cursor/hooks.json</code>
+      </div>
+      <div class="eco-card">
+        <span class="eco-icon">&#x1F50C;</span>
+        <h4>MCP Servers</h4>
+        <p class="eco-tagline">External tool connections</p>
+        <p class="eco-desc">Model Context Protocol servers that give the agent access to external tools and data sources &mdash; databases, APIs, browsers, file systems, design tools &mdash; through a standardized interface.</p>
+        <div class="eco-when">
+          <strong>When to use</strong>
+          "Query the Postgres database directly." "Browse the running app with Playwright." "Pull components from a Figma design." "Read and create GitHub issues." Any time the agent needs to interact with something outside the code editor.
+        </div>
+        <code>.cursor/mcp.json</code>
+      </div>
+      <div class="eco-card">
+        <span class="eco-icon">&#x1F4E6;</span>
+        <h4>Plugins</h4>
+        <p class="eco-tagline">Bundled distribution</p>
+        <p class="eco-desc">Packages that bundle rules, skills, commands, and MCP servers into a single installable unit. Distributed through the Cursor Marketplace or shared as URLs.</p>
+        <div class="eco-when">
+          <strong>When to use</strong>
+          "Install Stripe's official Cursor plugin for payment integration." "Share our team's entire .cursor/ setup as one package." "Distribute a partner SDK integration." Any time you want a one-click setup of pre-configured AI tooling.
+        </div>
+        <code>Marketplace</code>
+      </div>
+    </div>
+
+    <h3 style="margin-top: 48px;">When to Use What</h3>
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>I want to...</th>
+          <th>Use</th>
+          <th>Location</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Enforce coding standards automatically</td>
+          <td><strong>Rule</strong></td>
+          <td><code>.cursor/rules/*.mdc</code></td>
+        </tr>
+        <tr>
+          <td>Run a quick AI-driven action</td>
+          <td><strong>Command</strong></td>
+          <td><code>.cursor/commands/*.md</code></td>
+        </tr>
+        <tr>
+          <td>Define a multi-step workflow</td>
+          <td><strong>Skill</strong></td>
+          <td><code>.cursor/skills/&lt;name&gt;/SKILL.md</code></td>
+        </tr>
+        <tr>
+          <td>Delegate specialized work in parallel</td>
+          <td><strong>Subagent</strong></td>
+          <td><code>.cursor/agents/*.md</code></td>
+        </tr>
+        <tr>
+          <td>Run scripts before/after agent actions</td>
+          <td><strong>Hook</strong></td>
+          <td><code>.cursor/hooks.json</code></td>
+        </tr>
+        <tr>
+          <td>Connect to external tools &amp; data</td>
+          <td><strong>MCP Server</strong></td>
+          <td><code>.cursor/mcp.json</code></td>
+        </tr>
+        <tr>
+          <td>Bundle everything for distribution</td>
+          <td><strong>Plugin</strong></td>
+          <td>Cursor Marketplace</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="margin-top: 48px;">Commands vs Skills vs Rules</h3>
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th>Aspect</th>
+          <th>Commands</th>
+          <th>Skills</th>
+          <th>Rules</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Invocation</td>
+          <td>On-demand <code>/name</code></td>
+          <td>On-demand <code>/name</code> or <code>@name</code></td>
+          <td>Automatic</td>
+        </tr>
+        <tr>
+          <td>Scope</td>
+          <td>Single action</td>
+          <td>Multi-step workflow</td>
+          <td>Coding standards</td>
+        </tr>
+        <tr>
+          <td>Format</td>
+          <td>Plain markdown</td>
+          <td>SKILL.md + frontmatter</td>
+          <td>.mdc + frontmatter</td>
+        </tr>
+        <tr>
+          <td>Supporting files</td>
+          <td>No</td>
+          <td>Yes (scripts, templates)</td>
+          <td>No</td>
+        </tr>
+        <tr>
+          <td>Best for</td>
+          <td>"Do this one thing"</td>
+          <td>"Here's how to do X"</td>
+          <td>"Always follow these"</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== API REFERENCE ===== -->
+<section class="content-section" id="api">
+  <div class="container">
+    <span class="section-label">REFERENCE</span>
+    <h2>ShopCursor API Endpoints</h2>
+
+    <table class="api-table">
+      <thead>
+        <tr>
+          <th>Method</th>
+          <th>Endpoint</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="method method-get">GET</td>
+          <td><code>/api/products</code></td>
+          <td>List all products</td>
+        </tr>
+        <tr>
+          <td class="method method-get">GET</td>
+          <td><code>/api/products?search=query</code></td>
+          <td>Search products</td>
+        </tr>
+        <tr>
+          <td class="method method-get">GET</td>
+          <td><code>/api/products?category=Cat</code></td>
+          <td>Filter by category</td>
+        </tr>
+        <tr>
+          <td class="method method-get">GET</td>
+          <td><code>/api/products/{id}</code></td>
+          <td>Get product by ID</td>
+        </tr>
+        <tr>
+          <td class="method method-get">GET</td>
+          <td><code>/api/cart/{sessionId}</code></td>
+          <td>Get cart</td>
+        </tr>
+        <tr>
+          <td class="method method-post">POST</td>
+          <td><code>/api/cart/{sessionId}/items</code></td>
+          <td>Add item to cart</td>
+        </tr>
+        <tr>
+          <td class="method method-put">PUT</td>
+          <td><code>/api/cart/{sessionId}/items/{productId}</code></td>
+          <td>Update quantity</td>
+        </tr>
+        <tr>
+          <td class="method method-delete">DELETE</td>
+          <td><code>/api/cart/{sessionId}/items/{productId}</code></td>
+          <td>Remove item</td>
+        </tr>
+        <tr>
+          <td class="method method-post">POST</td>
+          <td><code>/api/checkout/{sessionId}</code></td>
+          <td>Place order</td>
+        </tr>
+        <tr>
+          <td class="method method-get">GET</td>
+          <td><code>/api/checkout/orders/{orderId}</code></td>
+          <td>Get order details</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ===== CHECKLIST ===== -->
+<section class="checklist-section" id="checklist">
+  <div class="container">
+    <span class="section-label">TRACK YOUR PROGRESS</span>
+    <h2>Workshop Checklist</h2>
+    <p style="max-width: 600px; margin-bottom: 8px;">Check off topics as you cover them. Progress is saved in your browser.</p>
+
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+    <p class="progress-text" id="progressText">0 of 0 completed</p>
+
+    <!-- Day 1 Checklists -->
+    <div class="checklist-group" data-group="setup">
+      <h3>Setup &amp; Welcome <span class="checklist-progress" data-progress="setup"></span></h3>
+      <ul class="checklist-items">
+        <li class="checklist-item" data-id="setup-1"><input type="checkbox"><div class="checklist-text"><strong>Verify prerequisites</strong>Java 17+, Node 18+, Cursor IDE installed</div></li>
+        <li class="checklist-item" data-id="setup-2"><input type="checkbox"><div class="checklist-text"><strong>Run verify-setup.sh</strong>All checks pass with green checkmarks</div></li>
+        <li class="checklist-item" data-id="setup-3"><input type="checkbox"><div class="checklist-text"><strong>Start backend &amp; frontend</strong>Both servers running, store visible at :5173</div></li>
+      </ul>
+    </div>
+
+    <div class="checklist-group" data-group="s1">
+      <h3>Session 1: AI Fundamentals <span class="checklist-progress" data-progress="s1"></span></h3>
+      <ul class="checklist-items">
+        <li class="checklist-item" data-id="s1-1"><input type="checkbox"><div class="checklist-text"><strong>Zero-shot prompting</strong>Direct instructions without examples</div></li>
+        <li class="checklist-item" data-id="s1-2"><input type="checkbox"><div class="checklist-text"><strong>Few-shot prompting</strong>Providing input/output examples</div></li>
+        <li class="checklist-item" data-id="s1-3"><input type="checkbox"><div class="checklist-text"><strong>Chain-of-thought</strong>"Think step by step" for complex reasoning</div></li>
+        <li class="checklist-item" data-id="s1-4"><input type="checkbox"><div class="checklist-text"><strong>Prompt engineering exercises</strong>Practice with real coding scenarios</div></li>
+      </ul>
+    </div>
+
+    <div class="checklist-group" data-group="s2">
+      <h3>Session 2: Cursor IDE Deep Dive <span class="checklist-progress" data-progress="s2"></span></h3>
+      <ul class="checklist-items">
+        <li class="checklist-item" data-id="s2-1"><input type="checkbox"><div class="checklist-text"><strong>Tab completion</strong>AI autocomplete in action</div></li>
+        <li class="checklist-item" data-id="s2-2"><input type="checkbox"><div class="checklist-text"><strong>Cmd+K inline editing</strong>Edit code with natural language</div></li>
+        <li class="checklist-item" data-id="s2-3"><input type="checkbox"><div class="checklist-text"><strong>Chat &amp; @ references</strong>Conversational AI with @file, @folder, @codebase</div></li>
+        <li class="checklist-item" data-id="s2-4"><input type="checkbox"><div class="checklist-text"><strong>Composer</strong>Multi-file editing orchestration</div></li>
+        <li class="checklist-item" data-id="s2-5"><input type="checkbox"><div class="checklist-text"><strong>Agent Mode</strong>Autonomous multi-step execution</div></li>
+        <li class="checklist-item" data-id="s2-6"><input type="checkbox"><div class="checklist-text"><strong>Subagents &amp; background agents</strong>Parallel execution and checkpoints</div></li>
+      </ul>
+    </div>
+
+    <div class="checklist-group" data-group="lab1">
+      <h3>Day 1 Lab: Refactor &amp; Enhance <span class="checklist-progress" data-progress="lab1"></span></h3>
+      <ul class="checklist-items">
+        <li class="checklist-item" data-id="lab1-1"><input type="checkbox"><div class="checklist-text"><strong>Refactor CartService.java</strong>Fix god method, magic numbers, duplication</div></li>
+        <li class="checklist-item" data-id="lab1-2"><input type="checkbox"><div class="checklist-text"><strong>Refactor ProductList.tsx</strong>Extract hooks, separate concerns</div></li>
+        <li class="checklist-item" data-id="lab1-3"><input type="checkbox"><div class="checklist-text"><strong>Add Wishlist feature</strong>Full-stack feature with Composer</div></li>
+      </ul>
+    </div>
+
+    <!-- Day 2 Checklists -->
+    <div class="checklist-group" data-group="s3">
+      <h3>Session 3: MCP, Skills, Commands &amp; Subagents <span class="checklist-progress" data-progress="s3"></span></h3>
+      <ul class="checklist-items">
+        <li class="checklist-item" data-id="s3-1"><input type="checkbox"><div class="checklist-text"><strong>MCP protocol &amp; ecosystem</strong>Understand Model Context Protocol architecture</div></li>
+        <li class="checklist-item" data-id="s3-2"><input type="checkbox"><div class="checklist-text"><strong>Configure MCP servers</strong>Filesystem and GitHub MCP servers</div></li>
+        <li class="checklist-item" data-id="s3-3"><input type="checkbox"><div class="checklist-text"><strong>Custom slash commands</strong>Create and test /commands</div></li>
+        <li class="checklist-item" data-id="s3-4"><input type="checkbox"><div class="checklist-text"><strong>Skills with SKILL.md</strong>Create multi-step workflow skills</div></li>
+        <li class="checklist-item" data-id="s3-5"><input type="checkbox"><div class="checklist-text"><strong>Subagent configuration</strong>Create agents with frontmatter (name, description, model)</div></li>
+        <li class="checklist-item" data-id="s3-6"><input type="checkbox"><div class="checklist-text"><strong>Plugins &amp; Marketplace</strong>Understand plugin ecosystem</div></li>
+      </ul>
+    </div>
+
+    <div class="checklist-group" data-group="s4">
+      <h3>Session 4: Playwright + MCP <span class="checklist-progress" data-progress="s4"></span></h3>
+      <ul class="checklist-items">
+        <li class="checklist-item" data-id="s4-1"><input type="checkbox"><div class="checklist-text"><strong>Playwright MCP setup</strong>Configure Playwright MCP for AI-driven testing</div></li>
+        <li class="checklist-item" data-id="s4-2"><input type="checkbox"><div class="checklist-text"><strong>AI-generated E2E tests</strong>Generate tests from natural language</div></li>
+        <li class="checklist-item" data-id="s4-3"><input type="checkbox"><div class="checklist-text"><strong>Debug failing tests</strong>Use AI to diagnose test failures</div></li>
+      </ul>
+    </div>
+
+    <div class="checklist-group" data-group="s5">
+      <h3>Session 5: AI Governance &amp; Hooks <span class="checklist-progress" data-progress="s5"></span></h3>
+      <ul class="checklist-items">
+        <li class="checklist-item" data-id="s5-1"><input type="checkbox"><div class="checklist-text"><strong>Code review for AI code</strong>Security, anti-patterns, quality checks</div></li>
+        <li class="checklist-item" data-id="s5-2"><input type="checkbox"><div class="checklist-text"><strong>BugBot PR review</strong>Automated review and "Fix in Cursor" workflow</div></li>
+        <li class="checklist-item" data-id="s5-3"><input type="checkbox"><div class="checklist-text"><strong>Project Rules (.mdc)</strong>Create and test auto-applied rules</div></li>
+        <li class="checklist-item" data-id="s5-4"><input type="checkbox"><div class="checklist-text"><strong>Agent Hooks</strong>Configure hooks.json for auto-format and safety gates</div></li>
+        <li class="checklist-item" data-id="s5-5"><input type="checkbox"><div class="checklist-text"><strong>Hook lifecycle events</strong>afterFileEdit, beforeShellExecution, beforeReadFile</div></li>
+      </ul>
+    </div>
+
+    <div class="checklist-group" data-group="lab2">
+      <h3>Day 2 Lab: E2E Testing <span class="checklist-progress" data-progress="lab2"></span></h3>
+      <ul class="checklist-items">
+        <li class="checklist-item" data-id="lab2-1"><input type="checkbox"><div class="checklist-text"><strong>Complete checkout tests</strong>Fill in test skeletons in checkout.spec.ts</div></li>
+        <li class="checklist-item" data-id="lab2-2"><input type="checkbox"><div class="checklist-text"><strong>Generate edge case tests</strong>AI-driven boundary condition testing</div></li>
+        <li class="checklist-item" data-id="lab2-3"><input type="checkbox"><div class="checklist-text"><strong>Workshop wrap-up</strong>Final review and Q&amp;A</div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ===== CLOSING ===== -->
+<section class="closing" id="closing">
+  <div class="container">
+    <div class="closing-logo">Deloitte<span>.</span> Digital</div>
+    <p class="closing-tagline">CREATE GREAT</p>
+    <h2>Thank You</h2>
+    <p>
+      Explore the unconventional paths to building with AI.<br>
+      Questions? Check <a href="docs/troubleshooting.md" style="color: var(--dd-green6);">troubleshooting.md</a> or the <a href="docs/cursor-cheatsheet.md" style="color: var(--dd-green6);">cheatsheet</a>.
+    </p>
+  </div>
+</section>
+
+<!-- ===== PRESENTATION CONTROLS ===== -->
+<div class="pres-controls" id="presControls">
+  <button onclick="presNav(-1)" title="Previous section">&#x25B2;</button>
+  <button onclick="presNav(1)" title="Next section">&#x25BC;</button>
+  <button onclick="togglePresentation()" title="Exit presentation">&#x2715;</button>
+</div>
+
+<script>
+// ===== Checklist Persistence =====
+const STORAGE_KEY = 'shopcursor-workshop-checklist';
+
+function loadChecklist() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+  } catch { return {}; }
+}
+
+function saveChecklist(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+function initChecklist() {
+  const state = loadChecklist();
+  const items = document.querySelectorAll('.checklist-item');
+
+  items.forEach(item => {
+    const id = item.dataset.id;
+    const checkbox = item.querySelector('input[type="checkbox"]');
+
+    if (state[id]) {
+      checkbox.checked = true;
+      item.classList.add('checked');
+    }
+
+    item.addEventListener('click', (e) => {
+      if (e.target === checkbox) return; // let native behavior handle
+      checkbox.checked = !checkbox.checked;
+      handleCheck(item, checkbox);
+    });
+
+    checkbox.addEventListener('change', () => {
+      handleCheck(item, checkbox);
+    });
+  });
+
+  updateProgress();
+}
+
+function handleCheck(item, checkbox) {
+  const state = loadChecklist();
+  const id = item.dataset.id;
+
+  if (checkbox.checked) {
+    item.classList.add('checked');
+    state[id] = true;
+  } else {
+    item.classList.remove('checked');
+    delete state[id];
+  }
+
+  saveChecklist(state);
+  updateProgress();
+}
+
+function updateProgress() {
+  const allItems = document.querySelectorAll('.checklist-item');
+  const checkedItems = document.querySelectorAll('.checklist-item.checked');
+  const total = allItems.length;
+  const done = checkedItems.length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+  document.getElementById('progressBar').style.width = pct + '%';
+  document.getElementById('progressText').textContent = `${done} of ${total} completed (${pct}%)`;
+
+  // Update group progress
+  document.querySelectorAll('.checklist-group').forEach(group => {
+    const groupName = group.dataset.group;
+    const groupItems = group.querySelectorAll('.checklist-item');
+    const groupChecked = group.querySelectorAll('.checklist-item.checked');
+    const badge = group.querySelector('.checklist-progress');
+    if (badge) {
+      badge.textContent = `${groupChecked.length}/${groupItems.length}`;
+    }
+  });
+}
+
+// ===== Presentation Mode =====
+let isPresentationMode = false;
+let currentSection = 0;
+
+function togglePresentation() {
+  isPresentationMode = !isPresentationMode;
+  document.body.classList.toggle('presentation-mode', isPresentationMode);
+
+  if (isPresentationMode) {
+    currentSection = 0;
+    scrollToSection(0);
+    document.addEventListener('keydown', presKeyHandler);
+  } else {
+    document.removeEventListener('keydown', presKeyHandler);
+  }
+}
+
+function getSections() {
+  return document.querySelectorAll('section');
+}
+
+function scrollToSection(index) {
+  const sections = getSections();
+  if (index >= 0 && index < sections.length) {
+    currentSection = index;
+    sections[index].scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function presNav(direction) {
+  const sections = getSections();
+  const next = currentSection + direction;
+  if (next >= 0 && next < sections.length) {
+    scrollToSection(next);
+  }
+}
+
+function presKeyHandler(e) {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+    e.preventDefault();
+    presNav(1);
+  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+    e.preventDefault();
+    presNav(-1);
+  } else if (e.key === 'Escape') {
+    togglePresentation();
+  }
+}
+
+// ===== Init =====
+document.addEventListener('DOMContentLoaded', initChecklist);
+</script>
+
+</body>
+</html>

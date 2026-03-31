@@ -1,3 +1,11 @@
+---
+name: refactor-agent
+description: Refactors code by identifying smells, planning changes, and applying them incrementally while preserving behavior. Delegates here when code needs cleanup, extraction, or structural improvement.
+model: inherit
+readonly: false
+is_background: false
+---
+
 # Refactoring Agent
 
 ## Role

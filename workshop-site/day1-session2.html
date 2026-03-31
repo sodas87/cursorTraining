@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 2: Introduction to Cursor IDE &mdash; ShopCursor Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav" id="nav">
+  <div class="container">
+    <div class="nav-brand">Deloitte<span>.</span> Digital</div>
+    <a href="index.html" class="nav-back">&larr; Back to Workshop Home</a>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="btn btn-outline btn-sm" onclick="togglePresentation()">Present</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== PAGE HERO ===== -->
+<section class="page-hero" id="hero">
+  <div class="container">
+    <span class="section-label">Day 1 &mdash; 11:00 - 12:15</span>
+    <h1>Introduction to Cursor IDE</h1>
+    <p>
+      From workspace indexing to Agent Mode &mdash; a comprehensive tour of every interaction surface in Cursor.
+      This session builds the muscle memory you will use for the rest of the workshop.
+    </p>
+  </div>
+</section>
+
+<!-- ===== 1. EXISTING CODEBASE SETUP AND NAVIGATION ===== -->
+<div class="section" id="codebase-setup">
+  <div class="container">
+    <div class="talk-track">
+      <h2>1. Existing Codebase Setup &amp; Navigation</h2>
+
+      <div class="narration">
+        "When you first open a project in Cursor, it starts building a map of your codebase.
+        You will see a progress indicator in the status bar &mdash; that is the indexing engine scanning every file,
+        generating embeddings, and storing them locally so the AI can search your code semantically rather than just by keyword.
+        This is the foundation that makes everything else &mdash; Chat, Composer, Agent Mode &mdash; actually useful."
+      </div>
+
+      <div class="talk-point">
+        <h3>How Workspace Indexing Works</h3>
+        <ul>
+          <li><strong>First-time indexing</strong> &mdash; Cursor walks the file tree, reads every source file, and produces vector embeddings (dense numeric representations of meaning). This can take a few minutes on a large repo.</li>
+          <li><strong>Incremental updates</strong> &mdash; After the initial pass, only changed files are re-indexed. Saves happen automatically on file save.</li>
+          <li><strong>What gets indexed</strong> &mdash; Source code, config files, markdown docs. Binary files and anything in <code>.gitignore</code> are skipped by default.</li>
+          <li><strong>Where it lives</strong> &mdash; The index is stored in <code>.cursor/</code> locally. It is not sent to the cloud.</li>
+        </ul>
+      </div>
+
+      <div class="talk-point">
+        <h3>Context Generation: Embeddings &amp; Semantic Search</h3>
+        <p>
+          "Context generation" is the process of turning your code into something the language model can reason about.
+          Cursor converts each file (and often smaller chunks within files) into <strong>embeddings</strong> &mdash;
+          high-dimensional vectors that capture semantic meaning. When you ask a question, Cursor converts your question
+          into an embedding too, and then finds the most similar code chunks using vector similarity search.
+        </p>
+        <p>
+          This is fundamentally different from <code>grep</code>. A semantic search for "cart pricing logic" will find
+          methods like <code>calculateSubtotal()</code> even though the word "pricing" never appears in the code.
+        </p>
+      </div>
+
+      <div class="talk-point">
+        <h3>How <code>@codebase</code> Works Behind the Scenes (RAG)</h3>
+        <p>
+          When you type <code>@codebase</code> in Chat, Cursor uses <strong>Retrieval Augmented Generation (RAG)</strong>:
+        </p>
+        <ol>
+          <li>Your question is embedded into a vector.</li>
+          <li>The vector index is queried for the top-N most relevant code chunks.</li>
+          <li>Those chunks are injected into the prompt as context, alongside your question.</li>
+          <li>The LLM generates an answer grounded in your actual code.</li>
+        </ol>
+
+        <div class="diagram">
+Your Question
+    |
+    v
+[ Embed Query ] ---> [ Vector Index ] ---> Top-N Code Chunks
+                                                |
+                                                v
+                                    [ LLM Prompt = Question + Chunks ]
+                                                |
+                                                v
+                                        Grounded Answer
+        </div>
+      </div>
+
+      <div class="callout callout-demo">
+        <h4>Live Demo</h4>
+        <p>
+          Let's open our ShopCursor project and watch the indexing status.
+          Open Cursor, then <kbd>File</kbd> &rarr; <kbd>Open Folder</kbd> and select the ShopCursor root.
+          Watch the status bar at the bottom &mdash; you will see "Indexing..." with a progress percentage.
+          Once it finishes, try <kbd>Cmd</kbd>+<kbd>L</kbd> and ask: <em>"What does this project do?"</em> using <code>@codebase</code>.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 2. CHAT MODE FOR CODEBASE EXPLORATION ===== -->
+<div class="section white-bg" id="chat-mode">
+  <div class="container">
+    <div class="talk-track">
+      <h2>2. Chat Mode for Codebase Exploration</h2>
+
+      <div class="narration">
+        "Chat is your conversation partner for the codebase. Think of it as pair programming with someone
+        who has read every file in the project. You open it with <kbd>Cmd</kbd>+<kbd>L</kbd>,
+        ask a question, and it answers with references back to the actual source. The real power comes from
+        the @ reference system &mdash; you can point the AI at specific files, folders, symbols, or the entire codebase."
+      </div>
+
+      <div class="talk-point">
+        <h3>Opening Chat &amp; Asking Questions</h3>
+        <ul>
+          <li><kbd>Cmd</kbd>+<kbd>L</kbd> opens the Chat panel on the right side.</li>
+          <li>Type a natural language question &mdash; "How does authentication work in this app?"</li>
+          <li>Chat will search the codebase for relevant context and give you an answer with code references.</li>
+          <li>Click any file reference in the response to jump directly to that code.</li>
+        </ul>
+      </div>
+
+      <div class="talk-point">
+        <h3>The @ Reference System</h3>
+        <p>@ references are how you give the AI precise context. Instead of hoping it finds the right files, you tell it exactly what to look at.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>What It Does</th>
+              <th>Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>@file</code></td>
+              <td>Includes a specific file in context</td>
+              <td><code>@CartService.java</code> explain this service</td>
+            </tr>
+            <tr>
+              <td><code>@folder</code></td>
+              <td>Includes all files in a directory</td>
+              <td><code>@backend/src/main/java/</code> list all controllers</td>
+            </tr>
+            <tr>
+              <td><code>@symbol</code></td>
+              <td>References a specific class, function, or variable</td>
+              <td><code>@addToCart</code> what does this method do?</td>
+            </tr>
+            <tr>
+              <td><code>@codebase</code></td>
+              <td>Searches entire indexed codebase via RAG</td>
+              <td><code>@codebase</code> how is error handling structured?</td>
+            </tr>
+            <tr>
+              <td><code>@web</code></td>
+              <td>Searches the web for current information</td>
+              <td><code>@web</code> latest Spring Boot 3.2 migration guide</td>
+            </tr>
+            <tr>
+              <td><code>@docs</code></td>
+              <td>Searches indexed documentation (configured per project)</td>
+              <td><code>@docs</code> how to configure CORS in Spring?</td>
+            </tr>
+            <tr>
+              <td><code>@git</code></td>
+              <td>References git history, diffs, and commits</td>
+              <td><code>@git</code> what changed in the last 3 commits?</td>
+            </tr>
+            <tr>
+              <td><code>@terminal</code></td>
+              <td>Includes recent terminal output</td>
+              <td><code>@terminal</code> why did that test fail?</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="talk-point">
+        <h3>Multi-Turn Conversations</h3>
+        <p>
+          Chat remembers the full conversation history within a session. You can ask a follow-up question
+          without repeating context &mdash; "Now show me the tests for that service" works because Chat
+          knows which service you were just discussing.
+        </p>
+
+        <div class="callout callout-insight">
+          <h4>Key Insight</h4>
+          <p>
+            <strong>When to use Chat vs. other modes:</strong> Chat is best for <em>exploration and learning</em> &mdash;
+            understanding how code works, asking "why" questions, getting explanations of architecture.
+            When you are ready to make changes, switch to Composer or Agent Mode.
+          </p>
+        </div>
+      </div>
+
+      <div class="callout callout-demo">
+        <h4>Live Demo</h4>
+        <p>
+          Open Chat (<kbd>Cmd</kbd>+<kbd>L</kbd>) and type:
+          <br><br>
+          <code>@CartService.java</code> Explain how this service manages cart state. What data structure holds the cart items, and how are quantities updated?
+          <br><br>
+          Then follow up: "What happens if I try to add a product that doesn't exist?"
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 3. COMPOSER FOR MULTI-FILE EDITS ===== -->
+<div class="section" id="composer">
+  <div class="container">
+    <div class="talk-track">
+      <h2>3. Composer for Multi-File Edits</h2>
+
+      <div class="narration">
+        "Composer is where Cursor really starts to feel like a team member rather than an autocomplete.
+        When you need to add a feature that touches the database layer, the service, the controller,
+        and the frontend &mdash; that is a Composer job. It looks at all the files involved, plans the changes,
+        and then applies them in one coordinated batch. You review the diffs, accept or reject, and you are done."
+      </div>
+
+      <div class="talk-point">
+        <h3>What Makes Composer Different</h3>
+        <ul>
+          <li><strong>Multi-file orchestration</strong> &mdash; Composer can create, edit, and delete multiple files in a single pass.</li>
+          <li><strong>Planning before executing</strong> &mdash; It first outlines what it intends to do, then generates the code. You see the plan before any files change.</li>
+          <li><strong>Diff-based review</strong> &mdash; Every change is shown as a diff you can accept or reject per-file.</li>
+          <li><strong>Context-aware</strong> &mdash; It reads your existing code patterns, naming conventions, and project structure to match them.</li>
+        </ul>
+      </div>
+
+      <div class="talk-point">
+        <h3>Opening &amp; Using Composer</h3>
+        <ol>
+          <li>Press <kbd>Cmd</kbd>+<kbd>I</kbd> to open the Composer panel.</li>
+          <li>Describe what you want in natural language &mdash; be specific about which layers to touch.</li>
+          <li>Use @ references to point Composer at relevant existing files as examples.</li>
+          <li>Review the proposed plan and generated diffs.</li>
+          <li>Accept all, accept per-file, or reject and refine your prompt.</li>
+        </ol>
+      </div>
+
+      <div class="talk-point">
+        <h3>When to Use Composer</h3>
+        <div class="two-col">
+          <div class="card">
+            <h3>Good Fit</h3>
+            <ul>
+              <li>Full-stack feature spanning backend + frontend</li>
+              <li>Adding a new API endpoint with service, controller, and tests</li>
+              <li>Cross-cutting concerns (logging, error handling across files)</li>
+              <li>Scaffolding a new module with multiple files</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Not the Best Fit</h3>
+            <ul>
+              <li>Single-method refactoring (use Cmd+K instead)</li>
+              <li>Exploratory questions (use Chat instead)</li>
+              <li>Complex multi-step tasks with iteration (use Agent Mode)</li>
+              <li>Changes you are not sure about yet (explore in Chat first)</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-demo">
+        <h4>Live Demo</h4>
+        <p>
+          Open Composer (<kbd>Cmd</kbd>+<kbd>I</kbd>) and enter:
+          <br><br>
+          "Add a Product Reviews feature. Create a Review entity with rating (1-5) and comment fields,
+          a ReviewRepository, a ReviewService, and a ReviewController with GET and POST endpoints at
+          <code>/api/products/{id}/reviews</code>. Follow the same patterns as the existing Product entity and controller.
+          <code>@Product.java</code> <code>@ProductController.java</code>"
+          <br><br>
+          Watch how Composer plans the file structure, then generates each file matching your existing conventions.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 4. INLINE EDITING FOR TARGETED REFACTORING ===== -->
+<div class="section white-bg" id="inline-editing">
+  <div class="container">
+    <div class="talk-track">
+      <h2>4. Inline Editing for Targeted Refactoring</h2>
+
+      <div class="narration">
+        "Inline editing is the surgical tool. You select a chunk of code, press <kbd>Cmd</kbd>+<kbd>K</kbd>,
+        describe what you want in plain English, and Cursor rewrites just that selection. It shows you a diff
+        right there in the editor &mdash; green for additions, red for removals &mdash; and you hit Tab to accept
+        or Escape to reject. It is the fastest way to make targeted changes."
+      </div>
+
+      <div class="talk-point">
+        <h3>The Cmd+K Workflow</h3>
+        <ol class="step-list">
+          <li>
+            <h4>Select the Code</h4>
+            <p>Highlight the method, block, or lines you want to change. The more precise your selection, the better the result.</p>
+          </li>
+          <li>
+            <h4>Press Cmd+K</h4>
+            <p>An inline prompt bar appears. Describe the change in natural language.</p>
+          </li>
+          <li>
+            <h4>Review the Diff</h4>
+            <p>Cursor shows a side-by-side diff of the proposed changes directly in the editor.</p>
+          </li>
+          <li>
+            <h4>Accept or Reject</h4>
+            <p>Press <kbd>Tab</kbd> to accept, <kbd>Esc</kbd> to reject. You can also partially accept with <kbd>Cmd</kbd>+<kbd>Y</kbd>.</p>
+          </li>
+        </ol>
+      </div>
+
+      <div class="talk-point">
+        <h3>Best Use Cases</h3>
+        <ul>
+          <li><strong>Single-method refactoring</strong> &mdash; "Extract the validation logic into a private method"</li>
+          <li><strong>Adding error handling</strong> &mdash; "Wrap this in a try-catch and throw a custom exception"</li>
+          <li><strong>Quick fixes</strong> &mdash; "Add null checks for all parameters"</li>
+          <li><strong>Type conversion</strong> &mdash; "Convert this to use Optional instead of null"</li>
+          <li><strong>Adding validation</strong> &mdash; "Add input validation for quantity and productId"</li>
+        </ul>
+      </div>
+
+      <div class="talk-point">
+        <h3>Tips for Getting Good Results</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Be Specific</h3>
+            <p>Instead of "make this better", say "add input validation for quantity (must be positive) and productId (must not be null), throwing IllegalArgumentException with descriptive messages."</p>
+          </div>
+          <div class="card">
+            <h3>Select Precisely</h3>
+            <p>Select only the code you want changed. If you select the entire file, Cmd+K might rewrite things you did not intend to change.</p>
+          </div>
+          <div class="card">
+            <h3>Iterate</h3>
+            <p>If the first result is not right, reject it (Esc) and refine your prompt. Add constraints like "keep the method signature the same" or "do not change the return type".</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-demo">
+        <h4>Live Demo</h4>
+        <p>
+          Open <code>CartService.java</code>, select the <code>addToCart</code> method body.
+          Press <kbd>Cmd</kbd>+<kbd>K</kbd> and type:
+          <br><br>
+          "Add input validation: quantity must be &gt; 0 and &lt;= 99, productId must not be null. Throw IllegalArgumentException with clear messages."
+          <br><br>
+          Review the diff, accept with Tab.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 5. AGENT MODE ===== -->
+<div class="section" id="agent-mode">
+  <div class="container">
+    <div class="talk-track">
+      <h2>5. Agent Mode: Autonomous Multi-Step Execution</h2>
+
+      <div class="narration">
+        "Agent Mode is the big upgrade in Cursor 2.0. Instead of you driving every step, the AI takes your goal
+        and works toward it autonomously &mdash; reading files, writing code, running commands, fixing errors,
+        and iterating until the task is done. It is the default mode now, and it is where Cursor becomes
+        genuinely transformative for your workflow."
+      </div>
+
+      <div class="talk-point">
+        <h3>The Plan &rarr; Execute &rarr; Iterate Cycle</h3>
+        <p>When you give Agent Mode a task, it follows a structured approach:</p>
+        <ol>
+          <li><strong>Plan</strong> &mdash; The agent reads relevant files, understands the codebase, and outlines a plan of action.</li>
+          <li><strong>Execute</strong> &mdash; It creates and edits files, runs shell commands (with your approval), and writes tests.</li>
+          <li><strong>Iterate</strong> &mdash; If something fails (a test, a build, a linting error), the agent reads the error, diagnoses the issue, and tries again.</li>
+        </ol>
+
+        <div class="diagram">
+[ Your Goal ]
+      |
+      v
+  [ PLAN ]  &lt;--- reads files, analyzes codebase
+      |
+      v
+ [ EXECUTE ] &lt;--- edits files, runs commands
+      |
+      v
+  [ CHECK ]  &lt;--- tests pass? build succeeds?
+      |
+   /     \
+  v       v
+[Done]  [Fix &amp; Retry] ---&gt; back to EXECUTE
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Checkpoints: Safe Rollback</h3>
+        <p>
+          Before every edit, Agent Mode creates an <strong>automatic checkpoint</strong> &mdash; a snapshot of the file state.
+          If the agent goes down a wrong path, you can roll back to any previous checkpoint with one click.
+          This makes Agent Mode safe to use even for experimental tasks.
+        </p>
+
+        <div class="callout callout-insight">
+          <h4>Key Insight</h4>
+          <p>
+            Checkpoints are not git commits. They are lightweight, in-memory snapshots that live within your Cursor session.
+            If you like the result, commit it to git. If you do not, roll back and the files are restored instantly.
+          </p>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Background Agents</h3>
+        <ul>
+          <li>Run up to <strong>8 parallel background agents</strong>, each working on a separate task.</li>
+          <li>Each background agent operates in a <strong>git worktree</strong> &mdash; an isolated copy of your repo. No conflicts with your working directory.</li>
+          <li>When a background agent finishes, it creates a branch with its changes. You review and merge like any PR.</li>
+          <li>Great for: "Add tests for all services" + "Update all deprecated API calls" + "Add logging to controllers" &mdash; all running simultaneously.</li>
+        </ul>
+      </div>
+
+      <div class="talk-point">
+        <h3>Subagents</h3>
+        <p>Agent Mode can delegate subtasks to specialized subagents:</p>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Explore</h3>
+            <p>Reads files and searches the codebase to gather information. Read-only &mdash; it never modifies files. Perfect for understanding code before making changes.</p>
+          </div>
+          <div class="card">
+            <h3>Bash</h3>
+            <p>Executes shell commands &mdash; running tests, installing packages, building the project. The agent uses output to verify its work.</p>
+          </div>
+          <div class="card">
+            <h3>Browser</h3>
+            <p>Opens a headless browser to interact with web pages. Useful for testing frontend changes, scraping documentation, or verifying API endpoints.</p>
+          </div>
+        </div>
+        <p style="margin-top: 16px;">
+          You can also create <strong>custom subagents</strong> in <code>.cursor/agents/</code>.
+          These are markdown files with YAML frontmatter that define a specialized agent with its own model, permissions, and instructions.
+        </p>
+      </div>
+
+      <div class="callout callout-demo">
+        <h4>Live Demo</h4>
+        <p>
+          In Agent Mode (the default), type:
+          <br><br>
+          "Add a new GET endpoint at <code>/api/products/featured</code> that returns the top 5 products ordered by name.
+          Create the repository method, service method, and controller endpoint. Write a unit test for the service method.
+          Follow existing patterns in <code>@ProductService.java</code> and <code>@ProductController.java</code>."
+          <br><br>
+          Watch the agent plan its approach, create each layer, and then run the tests to verify.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 6. AUTOMATED CODE REVIEW ===== -->
+<div class="section white-bg" id="code-review">
+  <div class="container">
+    <div class="talk-track">
+      <h2>6. Automated Code Review &amp; Refactoring</h2>
+
+      <div class="narration">
+        "One of the most practical uses of Cursor is code review. You can paste code into Chat,
+        reference a file with @, or use a slash command &mdash; and ask the AI to review it for
+        specific issues. It is not a replacement for human review, but it catches things that humans
+        routinely miss: subtle race conditions, missing null checks, SQL injection vectors."
+      </div>
+
+      <div class="talk-point">
+        <h3>Review Approaches</h3>
+        <ul>
+          <li><strong>Chat review</strong> &mdash; Open Chat, reference a file with <code>@filename</code>, and ask: "Review this file for security issues and anti-patterns."</li>
+          <li><strong>The /review pattern</strong> &mdash; Create a custom command at <code>.cursor/commands/review.md</code> that defines your team's review checklist. Then just type <code>/review</code> in agent chat.</li>
+          <li><strong>Agent-driven review</strong> &mdash; In Agent Mode, ask: "Review all files changed in the last commit and create a summary of issues."</li>
+        </ul>
+      </div>
+
+      <div class="talk-point">
+        <h3>Targeted Review Types</h3>
+        <div class="two-col">
+          <div>
+            <h4>Security Review</h4>
+            <ul>
+              <li>SQL injection and XSS vulnerabilities</li>
+              <li>Authentication / authorization gaps</li>
+              <li>Hardcoded secrets or credentials</li>
+              <li>Input validation weaknesses</li>
+            </ul>
+          </div>
+          <div>
+            <h4>Quality Review</h4>
+            <ul>
+              <li>God classes and long methods</li>
+              <li>Code duplication</li>
+              <li>Missing error handling</li>
+              <li>Naming convention violations</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>BugBot for Automated PR Review</h3>
+        <p>
+          <strong>BugBot</strong> is Cursor's automated PR reviewer. When enabled on a repository,
+          it automatically reviews every pull request and leaves comments on potential issues.
+          Each comment includes a "Fix in Cursor" button that opens Cursor with the issue pre-loaded
+          so you can fix it immediately.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 7. DEBUGGING AND ERROR ANALYSIS ===== -->
+<div class="section" id="debugging">
+  <div class="container">
+    <div class="talk-track">
+      <h2>7. Debugging &amp; Error Analysis</h2>
+
+      <div class="narration">
+        "Here is a workflow that will save you hours: when you get an error, instead of reading the stack trace
+        line by line, paste it into Chat. Cursor will map the stack trace to your actual code, identify the
+        root cause, and suggest a fix. You can also use <code>@terminal</code> to pull in the most recent
+        terminal output automatically."
+      </div>
+
+      <div class="talk-point">
+        <h3>Debugging Workflows</h3>
+        <ol class="step-list">
+          <li>
+            <h4>Paste the Error</h4>
+            <p>Copy the error message or stack trace and paste it directly into Chat. Cursor correlates the line numbers and file names with your project.</p>
+          </li>
+          <li>
+            <h4>Use @terminal</h4>
+            <p>If the error is in your terminal, just type <code>@terminal</code> in Chat &mdash; it automatically includes the recent terminal output.</p>
+          </li>
+          <li>
+            <h4>Chain-of-Thought Debugging</h4>
+            <p>Ask: "Walk through this error step by step. What is the execution path that leads to this exception?" This forces the AI to trace the logic methodically.</p>
+          </li>
+          <li>
+            <h4>Apply the Fix</h4>
+            <p>Once Chat identifies the issue, ask it to generate the fix. You can apply it directly from Chat or copy it into Cmd+K for more control.</p>
+          </li>
+        </ol>
+      </div>
+
+      <div class="callout callout-demo">
+        <h4>Live Demo</h4>
+        <p>
+          Paste this sample stack trace into Chat:
+        </p>
+        <div class="code-block">
+<span class="type">java.lang.NullPointerException</span>: Cannot invoke "String.length()"
+    at com.shopcursor.service.<span class="keyword">CartService</span>.addToCart(<span class="string">CartService.java:47</span>)
+    at com.shopcursor.controller.<span class="keyword">CartController</span>.addItem(<span class="string">CartController.java:32</span>)
+    at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+        </div>
+        <p style="margin-top: 12px;">
+          Ask: "Diagnose this NullPointerException. What is null at CartService.java:47, and what is the fix?"
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 8. TEST GENERATION AND DOCUMENTATION ===== -->
+<div class="section white-bg" id="test-gen">
+  <div class="container">
+    <div class="talk-track">
+      <h2>8. Test Generation &amp; Documentation</h2>
+
+      <div class="narration">
+        "AI-generated tests are one of the highest-value use cases. You can point Cursor at a service class
+        and ask it to generate comprehensive JUnit tests, and it will cover happy paths, edge cases, and
+        error scenarios. But &mdash; and this is important &mdash; you must review them. AI tests can look
+        correct while testing the wrong thing."
+      </div>
+
+      <div class="talk-point">
+        <h3>Generating Tests</h3>
+        <ul>
+          <li><strong>JUnit tests</strong> &mdash; "Generate JUnit 5 tests for <code>@CartService.java</code>. Cover happy path, empty cart, invalid product ID, and quantity edge cases."</li>
+          <li><strong>Playwright E2E tests</strong> &mdash; "Generate Playwright tests for the cart page. Test adding items, updating quantity, and removing items. Follow the Page Object Model pattern in <code>@e2e/pages/</code>."</li>
+          <li><strong>Following existing patterns</strong> &mdash; Use @ references to point at existing test files: "Follow the test style in <code>@ProductServiceTest.java</code>".</li>
+        </ul>
+      </div>
+
+      <div class="talk-point">
+        <h3>Documentation Generation</h3>
+        <ul>
+          <li><strong>JavaDoc</strong> &mdash; Select a class or method, Cmd+K: "Add comprehensive JavaDoc including @param, @return, and @throws tags".</li>
+          <li><strong>JSDoc</strong> &mdash; Same workflow for TypeScript/JavaScript: "Add JSDoc with type annotations and examples".</li>
+          <li><strong>README generation</strong> &mdash; "Generate a README.md for this project based on the codebase structure and existing docs."</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-warning">
+        <h4>Warning</h4>
+        <p>
+          <strong>Always review generated tests.</strong> Common pitfalls:
+        </p>
+        <ul>
+          <li>Tests that assert on the implementation rather than behavior (brittle tests).</li>
+          <li>Mock setups that do not reflect real-world conditions.</li>
+          <li>Missing edge cases that the AI did not think of.</li>
+          <li>Tests that pass but do not actually test what you think they test (vacuous assertions).</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 9. WORKSPACE INDEXING AND .CURSORRULES ===== -->
+<div class="section" id="rules-config">
+  <div class="container">
+    <div class="talk-track">
+      <h2>9. Workspace Indexing &amp; .cursorrules Configuration</h2>
+
+      <div class="narration">
+        "Rules are how you teach Cursor about your project's standards. Instead of repeating
+        'use constructor injection, not field injection' in every prompt, you write it once as a rule
+        and it applies automatically to every AI interaction. Think of rules as your project's style guide
+        for the AI."
+      </div>
+
+      <div class="talk-point">
+        <h3>The Legacy: <code>.cursorrules</code></h3>
+        <p>
+          The original <code>.cursorrules</code> file (placed at the project root) is still supported but deprecated.
+          It was a single file with instructions that applied globally. The problem: it scaled poorly for large
+          projects with different conventions in different areas.
+        </p>
+      </div>
+
+      <div class="talk-point">
+        <h3>The Modern Replacement: Project Rules</h3>
+        <p>
+          Project Rules live in <code>.cursor/rules/*.mdc</code>. Each rule file has YAML frontmatter
+          that controls when and how it is applied.
+        </p>
+        <div class="code-block">
+<span class="comment">---</span>
+<span class="keyword">description</span>: <span class="string">"Java service layer conventions"</span>
+<span class="keyword">globs</span>: <span class="string">["backend/**/*Service.java"]</span>
+<span class="keyword">alwaysApply</span>: <span class="keyword">false</span>
+<span class="comment">---</span>
+
+<span class="comment"># Service Layer Rules</span>
+- Use constructor injection, never field injection
+- Services must be annotated with @Service
+- All public methods must have JavaDoc
+- Throw custom exceptions, never generic ones
+- Use Optional for nullable return types
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>The Four Rule Application Modes</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Mode</th>
+              <th>How It Works</th>
+              <th>Best For</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Always Apply</strong></td>
+              <td><code>alwaysApply: true</code> &mdash; included in every prompt</td>
+              <td>Universal standards (naming, formatting)</td>
+            </tr>
+            <tr>
+              <td><strong>Glob-based</strong></td>
+              <td><code>globs: ["*.java"]</code> &mdash; auto-included when matching files are in context</td>
+              <td>Language or layer-specific rules</td>
+            </tr>
+            <tr>
+              <td><strong>Intelligent</strong></td>
+              <td>Agent reads the <code>description</code> field and decides if the rule is relevant</td>
+              <td>Domain-specific patterns</td>
+            </tr>
+            <tr>
+              <td><strong>Manual</strong></td>
+              <td>User explicitly @-mentions the rule to include it</td>
+              <td>Rarely used specialized guidelines</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-insight">
+        <h4>Key Insight</h4>
+        <p>
+          Rules shape <em>every</em> AI interaction in your project. A well-crafted set of rules means
+          your entire team gets consistent AI output without each developer having to write detailed prompts.
+          Commit your <code>.cursor/rules/</code> directory to version control so the whole team benefits.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 10. KEYBOARD SHORTCUTS ===== -->
+<div class="section white-bg" id="shortcuts">
+  <div class="container">
+    <div class="talk-track">
+      <h2>10. Essential Keyboard Shortcuts &amp; Productivity Tips</h2>
+
+      <div class="narration">
+        "You do not need to memorize all of these right now. The three that will change your workflow today
+        are <kbd>Tab</kbd> to accept, <kbd>Cmd</kbd>+<kbd>K</kbd> for inline edits, and <kbd>Cmd</kbd>+<kbd>L</kbd>
+        for Chat. Everything else you will pick up as you use the tool."
+      </div>
+
+      <div class="talk-point">
+        <h3>Core Shortcuts</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Shortcut</th>
+              <th>Action</th>
+              <th>When to Use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><kbd>Tab</kbd></td>
+              <td>Accept AI suggestion / autocomplete</td>
+              <td>While typing &mdash; accept the ghost text</td>
+            </tr>
+            <tr>
+              <td><kbd>Esc</kbd></td>
+              <td>Reject AI suggestion</td>
+              <td>When the suggestion is wrong</td>
+            </tr>
+            <tr>
+              <td><kbd>Cmd</kbd>+<kbd>K</kbd></td>
+              <td>Inline editing (select code first)</td>
+              <td>Targeted single-block refactoring</td>
+            </tr>
+            <tr>
+              <td><kbd>Cmd</kbd>+<kbd>L</kbd></td>
+              <td>Open Chat panel</td>
+              <td>Ask questions, explore code</td>
+            </tr>
+            <tr>
+              <td><kbd>Cmd</kbd>+<kbd>I</kbd></td>
+              <td>Open Composer</td>
+              <td>Multi-file edits and feature scaffolding</td>
+            </tr>
+            <tr>
+              <td><kbd>Alt</kbd>+<kbd>]</kbd></td>
+              <td>Next suggestion</td>
+              <td>Cycle through alternative completions</td>
+            </tr>
+            <tr>
+              <td><kbd>Alt</kbd>+<kbd>[</kbd></td>
+              <td>Previous suggestion</td>
+              <td>Go back to a previous completion option</td>
+            </tr>
+            <tr>
+              <td><kbd>Cmd</kbd>+<kbd>Shift</kbd>+<kbd>L</kbd></td>
+              <td>Toggle AI panel</td>
+              <td>Show/hide the AI sidebar</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="talk-point">
+        <h3>Productivity Tips</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Start Fresh After Features</h3>
+            <p>After completing a feature, start a new Chat conversation. Old context can confuse the AI when you switch tasks.</p>
+          </div>
+          <div class="card">
+            <h3>Use Targeted @ Refs</h3>
+            <p>Prefer <code>@file</code> over <code>@codebase</code> when you know which files are relevant. It is faster and more accurate.</p>
+          </div>
+          <div class="card">
+            <h3>Keep Context Focused</h3>
+            <p>Do not dump your entire project into context. The LLM has a limited window &mdash; give it what it needs, not everything.</p>
+          </div>
+          <div class="card">
+            <h3>Iterate, Do Not Restart</h3>
+            <p>If the AI gets close but not perfect, refine your prompt rather than starting over. Say "Almost, but change X to Y."</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 11. CREATING SKILLS AND COMMANDS ===== -->
+<div class="section" id="skills-commands">
+  <div class="container">
+    <div class="talk-track">
+      <h2>11. Creating Skills &amp; Commands</h2>
+
+      <div class="narration">
+        "Commands and Skills are how you encode your team's workflows so they are repeatable.
+        A command is a one-liner &mdash; type <code>/review</code> and the AI knows exactly what to check.
+        A skill is a multi-step recipe &mdash; type <code>/add-endpoint</code> and it walks through creating
+        the entity, repository, service, controller, and tests in order."
+      </div>
+
+      <div class="talk-point">
+        <h3>Slash Commands</h3>
+        <p>Commands are plain markdown files in <code>.cursor/commands/*.md</code>. You invoke them by typing <code>/</code> followed by the filename (without the extension).</p>
+
+        <div class="code-block">
+<span class="comment"># .cursor/commands/review.md</span>
+
+Review the selected code or referenced file for:
+1. <span class="keyword">Security</span> - SQL injection, XSS, auth gaps
+2. <span class="keyword">Performance</span> - N+1 queries, unnecessary allocations
+3. <span class="keyword">Patterns</span> - Does it follow our project conventions?
+4. <span class="keyword">Error handling</span> - Are all failure modes covered?
+
+Provide a numbered list of findings with severity
+(critical / warning / suggestion) and code fixes.
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Skills: Multi-Step Workflows</h3>
+        <p>
+          Skills live in <code>.cursor/skills/&lt;name&gt;/SKILL.md</code>. They have YAML frontmatter
+          and can include supporting scripts, templates, and documentation in their directory.
+        </p>
+
+        <div class="code-block">
+<span class="comment"># .cursor/skills/add-endpoint/SKILL.md</span>
+
+<span class="comment">---</span>
+<span class="keyword">name</span>: <span class="string">add-endpoint</span>
+<span class="keyword">description</span>: <span class="string">"Scaffold a new REST endpoint with all layers"</span>
+<span class="comment">---</span>
+
+## Steps
+1. Ask the user for the entity name, fields, and HTTP methods
+2. Create the JPA entity in <span class="type">backend/src/main/java/.../model/</span>
+3. Create the repository interface
+4. Create the service class with business logic
+5. Create the controller with proper annotations
+6. Generate JUnit tests for the service layer
+7. Run <span class="keyword">./mvnw test</span> to verify everything compiles
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>When to Use Commands vs. Skills</h3>
+        <div class="two-col">
+          <div class="card">
+            <h3>Commands</h3>
+            <ul>
+              <li>Single prompt, single action</li>
+              <li>Plain markdown, no frontmatter needed</li>
+              <li>Best for: review, explain, format, lint</li>
+              <li>Quick to create, quick to invoke</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Skills</h3>
+            <ul>
+              <li>Multi-step workflows with ordering</li>
+              <li>YAML frontmatter with name and description</li>
+              <li>Can include scripts and template files</li>
+              <li>Best for: scaffold feature, migrate pattern, setup config</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Creating Your Own</h3>
+        <ul>
+          <li><strong><code>/create-skill</code></strong> &mdash; Interactive wizard that scaffolds a new skill directory with SKILL.md.</li>
+          <li><strong><code>/create-rule</code></strong> &mdash; Interactive wizard that creates a new .mdc rule file with frontmatter.</li>
+          <li>Or just create the files manually &mdash; the format is simple markdown with optional YAML frontmatter.</li>
+        </ul>
+      </div>
+
+      <div class="callout callout-demo">
+        <h4>Live Demo</h4>
+        <p>
+          In agent chat, type <code>/review</code> and then reference <code>@CartService.java</code>.
+          Watch how the command's instructions guide the AI through a structured review.
+          <br><br>
+          Then try: <code>/create-skill</code> to see the interactive skill creation wizard in action.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer class="page-footer">
+  <div class="container">
+    <div class="footer-logo">Deloitte<span>.</span> Digital</div>
+    <p style="margin-top: 8px;">
+      <a href="index.html">&larr; Back to Workshop Home</a>
+    </p>
+    <p style="margin-top: 12px;">ShopCursor Workshop &mdash; Cursor IDE for AI-Assisted Development</p>
+  </div>
+</footer>
+
+<!-- ===== PRESENTATION CONTROLS ===== -->
+<div class="pres-controls" id="presControls">
+  <button onclick="presNav(-1)" title="Previous section">&#x25B2;</button>
+  <button onclick="presNav(1)" title="Next section">&#x25BC;</button>
+  <button onclick="togglePresentation()" title="Exit presentation">&#x2715;</button>
+</div>
+
+<script>
+// ===== Presentation Mode =====
+let isPresentationMode = false;
+let currentSlide = 0;
+
+function getSlides() {
+  return document.querySelectorAll('.talk-track, .page-hero');
+}
+
+function togglePresentation() {
+  isPresentationMode = !isPresentationMode;
+  document.body.classList.toggle('presentation-mode', isPresentationMode);
+
+  if (isPresentationMode) {
+    currentSlide = 0;
+    scrollToSlide(0);
+    document.addEventListener('keydown', presKeyHandler);
+  } else {
+    document.removeEventListener('keydown', presKeyHandler);
+  }
+}
+
+function scrollToSlide(index) {
+  const slides = getSlides();
+  if (index >= 0 && index < slides.length) {
+    currentSlide = index;
+    slides[index].scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function presNav(direction) {
+  const slides = getSlides();
+  const next = currentSlide + direction;
+  if (next >= 0 && next < slides.length) {
+    scrollToSlide(next);
+  }
+}
+
+function presKeyHandler(e) {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+    e.preventDefault();
+    presNav(1);
+  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+    e.preventDefault();
+    presNav(-1);
+  } else if (e.key === 'Escape') {
+    togglePresentation();
+  }
+}
+</script>
+
+</body>
+</html>

@@ -1,6 +1,6 @@
 ---
 description: Workshop-specific rules and context
-globs: ["**"]
+alwaysApply: true
 ---
 
 # ShopCursor Workshop Context
