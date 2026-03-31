@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "hooks": {
+    "afterFileEdit": [
+      {
+        "command": ".cursor/hooks/format-on-edit.sh",
+        "type": "command",
+        "timeout": 10,
+        "failClosed": false
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/block-dangerous.sh",
+        "type": "command",
+        "timeout": 5,
+        "failClosed": false,
+        "matcher": "rm -rf|DROP TABLE|git push --force|git reset --hard"
+      }
+    ]
+  }
+}

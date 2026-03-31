@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Session 1: AI Fundamentals &amp; Cursor Basics — ShopCursor Workshop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;0,800;1,800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ===== NAVIGATION ===== -->
+<nav class="nav">
+  <div class="container">
+    <div class="nav-brand">Deloitte<span>.</span> Digital</div>
+    <a href="index.html" class="nav-back">&larr; Back to Workshop Home</a>
+    <button class="btn btn-outline btn-sm" onclick="togglePresentation()">Present</button>
+  </div>
+</nav>
+
+<!-- ===== PAGE HERO ===== -->
+<section class="page-hero">
+  <div class="container">
+    <span class="section-label">Day 1 &mdash; 9:30 - 10:45</span>
+    <h1>AI Fundamentals &amp; Cursor Basics</h1>
+    <p>Understanding how large language models actually work, why that matters for how you use them, and building a practical toolkit of prompt engineering techniques for Java and React development.</p>
+  </div>
+</section>
+
+<!-- ===== SECTION 1: Understanding LLMs ===== -->
+<section class="section">
+  <div class="container">
+    <div class="talk-track">
+      <h2>Understanding Large Language Models in a Development Context</h2>
+
+      <div class="talk-point">
+        <h3>What LLMs Actually Are</h3>
+        <p>At their core, large language models are neural networks built on the <strong>transformer architecture</strong>. They work by predicting the most likely next token in a sequence. That is the entire mechanism -- there is no hidden compiler, no secret reasoning engine, no database of code snippets being looked up. It is next-token prediction, trained on enormous amounts of text.</p>
+        <p>The model takes in a sequence of tokens, passes them through layers of attention mechanisms (which figure out which parts of the input are most relevant to each other), and outputs a probability distribution over what comes next. It samples from that distribution, appends the result, and repeats.</p>
+
+        <div class="narration">
+          <strong>Talk track:</strong> "When you ask Cursor to write a Spring Boot controller, it's not compiling Java in its head. It's not looking at a database of controllers and finding a match. It has seen millions of Spring Boot controllers during training, and it's generating one token at a time -- <code>@RestController</code>, then <code>public</code>, then <code>class</code> -- each time predicting 'what's the most likely next piece of code given everything that came before?' The result often looks like it understands Java. But understanding and statistical prediction are different things, and that distinction matters for how you use these tools."
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>How Training Data Shapes Capabilities</h3>
+        <p>The model's abilities are a direct reflection of its training data. GitHub Copilot was trained heavily on public GitHub repositories, which means it excels at patterns that appear frequently in open-source code. Claude (which Cursor also supports) was trained on a broader mix of text -- books, websites, documentation, code -- which gives it stronger reasoning about intent and architecture, but sometimes less precise syntax recall for niche frameworks.</p>
+        <ul>
+          <li><strong>Heavily-represented patterns</strong> (Spring Boot REST controllers, React hooks, Express routes) get excellent generation quality</li>
+          <li><strong>Under-represented patterns</strong> (proprietary internal frameworks, obscure libraries, very new APIs) produce more errors and hallucinations</li>
+          <li><strong>Your specific codebase conventions</strong> are not in the training data -- you need to provide that context explicitly</li>
+        </ul>
+      </div>
+
+      <div class="talk-point">
+        <h3>The "Stochastic Parrot" vs. "Reasoning Engine" Debate</h3>
+        <p>This is a real debate in AI research, and it has practical implications for your daily work. The "stochastic parrot" view says LLMs are sophisticated pattern matchers that recombine training data without genuine understanding. The "emergent reasoning" view says that at sufficient scale, something resembling actual reasoning emerges from the patterns.</p>
+        <p>For your purposes as developers, the answer is: <strong>it doesn't matter which is true</strong>. What matters is how you work with the tool.</p>
+
+        <div class="callout callout-insight">
+          <h4>Key Insight</h4>
+          <p>Treat the AI like a very well-read junior developer who has seen an enormous amount of code but has never actually shipped a production system. They can write code that looks correct, follows common patterns, and passes a first-glance review. But they have no real understanding of your specific business domain, your deployment environment, or the subtle requirements that live in your team's heads but not in the codebase.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 2: Tokens & Context Windows ===== -->
+<section class="section white-bg">
+  <div class="container">
+    <div class="talk-track">
+      <h2>Token Limits, Context Windows, and Impact on Code Generation</h2>
+
+      <div class="talk-point">
+        <h3>What Tokens Are</h3>
+        <p>Tokens are subword units -- the fundamental pieces the model works with. They are not characters, not words, but something in between. In English prose, a token averages about 4 characters. But <strong>code is more token-dense</strong> because of camelCase identifiers, special characters, and structured syntax.</p>
+        <div class="two-col">
+          <div>
+            <h4>English text</h4>
+            <div class="code-block">
+<span class="comment">// "The quick brown fox" = 4 tokens</span>
+<span class="comment">// ~4 characters per token</span>
+<span class="comment">// 1 page of English ~ 250 tokens</span>
+            </div>
+          </div>
+          <div>
+            <h4>Java code</h4>
+            <div class="code-block">
+<span class="comment">// "productRepository.findById(id)" = ~8 tokens</span>
+<span class="comment">// Code averages ~2-3 chars per token</span>
+<span class="comment">// A 100-line Java class ~ 500-800 tokens</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Context Window Sizes -- What Do They Mean Practically?</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Context Window</th>
+              <th>Roughly Equivalent To</th>
+              <th>Available In Cursor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>GPT-4o</td>
+              <td>128k tokens</td>
+              <td>~96k words / ~300 pages</td>
+              <td>Yes</td>
+            </tr>
+            <tr>
+              <td>Claude 3.5 Sonnet / Claude 4</td>
+              <td>200k tokens</td>
+              <td>~150k words / ~500 pages</td>
+              <td>Yes</td>
+            </tr>
+            <tr>
+              <td>Gemini 1.5 Pro / 2.0</td>
+              <td>1M+ tokens</td>
+              <td>~750k words / small codebase</td>
+              <td>Yes (via API)</td>
+            </tr>
+          </tbody>
+        </table>
+        <p>A 200k context window sounds enormous, and it is. But a medium-sized Java/React project can easily be 50,000+ lines of code. You are never going to fit your entire codebase in context. And even if you could, you would not want to -- quality degrades with very long contexts.</p>
+
+        <div class="narration">
+          <strong>Talk track:</strong> "Think of the context window as the model's working memory. Just like you can't hold an entire codebase in your head at once, the model can't either. And just like your own memory, the things at the beginning and end of what it's 'reading' tend to get more attention than stuff in the middle. This is actually a well-documented phenomenon called the <em>'lost in the middle'</em> problem -- research shows models pay significantly less attention to information placed in the middle of long contexts compared to the beginning and end."
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>The "Lost in the Middle" Problem</h3>
+        <p>Research from Stanford and others has shown that when you give an LLM a very long context, it pays the most attention to:</p>
+        <ol>
+          <li><strong>The very beginning</strong> of the context (system prompt, first instructions)</li>
+          <li><strong>The very end</strong> of the context (your most recent message, the most recent code)</li>
+          <li>Content in the <strong>middle gets significantly less attention</strong>, leading to missed details and instructions</li>
+        </ol>
+
+        <div class="diagram">
+Attention Level
+  High |####                            ######
+       |#####                          #######
+       |######                        ########
+       |#######                      #########
+  Low  |################################
+       +---------------------------------------
+        Start          Middle           End
+                  Context Position
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>How Cursor Manages Context</h3>
+        <p>This is one of the key reasons Cursor exists as a product rather than just using ChatGPT with copy-paste. Cursor provides several mechanisms to keep context focused and relevant:</p>
+        <ul>
+          <li><strong>Workspace indexing</strong> -- Cursor indexes your entire codebase locally, creating embeddings that allow it to find relevant code quickly</li>
+          <li><strong>RAG (Retrieval-Augmented Generation)</strong> -- When you ask a question, Cursor retrieves the most relevant code snippets and includes them in context, rather than dumping your entire codebase</li>
+          <li><strong>@ references</strong> -- You can explicitly point the model at specific files (<code>@ProductService.java</code>), folders (<code>@src/main/java</code>), or even the whole codebase (<code>@codebase</code>)</li>
+          <li><strong>Automatic context selection</strong> -- In Agent mode, Cursor determines which files to read based on the task</li>
+        </ul>
+
+        <div class="callout callout-insight">
+          <h4>Key Insight</h4>
+          <p>The best way to get high-quality output from any model is not to maximize context -- it's to <strong>optimize context</strong>. Give the model exactly what it needs and nothing more. A focused 2,000-token context will almost always produce better results than a sprawling 100,000-token context that includes irrelevant files.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 3: Prompt Engineering Essentials ===== -->
+<section class="section">
+  <div class="container">
+    <div class="talk-track">
+      <h2>Prompt Engineering Essentials for Technical Tasks</h2>
+
+      <div class="talk-point">
+        <h3>Zero-Shot Prompting</h3>
+        <p>The simplest technique: just tell the model what you want. No examples, no elaborate setup. This works well when the task is straightforward and the model has seen many similar examples in training.</p>
+        <div class="code-block">
+<span class="comment">// Zero-shot: Direct instruction</span>
+<span class="string">"Write a Java method that validates an email address using regex.
+ Return true if valid, false otherwise."</span>
+        </div>
+        <p>Zero-shot works best for well-known patterns. The model has seen thousands of email validators. But for anything specific to your project, you will need more context.</p>
+      </div>
+
+      <div class="talk-point">
+        <h3>Few-Shot Prompting</h3>
+        <p>Provide input/output examples to show the model the pattern you want. This is especially powerful when your project follows specific conventions that differ from common open-source patterns.</p>
+        <div class="code-block">
+<span class="comment">// Few-shot: Provide examples to guide behavior</span>
+<span class="string">"Convert these REST endpoints to follow our project pattern:
+
+Example input:
+  GET /users/{id}
+Example output:
+  @GetMapping("/users/{id}")
+  public ResponseEntity&lt;ApiResponse&lt;UserDTO&gt;&gt; getUser(
+      @PathVariable Long id) {
+    return ResponseEntity.ok(ApiResponse.success(userService.findById(id)));
+  }
+
+Now convert:
+  POST /products with body ProductCreateRequest"</span>
+        </div>
+        <p>The model sees the pattern (custom <code>ApiResponse</code> wrapper, <code>ResponseEntity</code>, DTO naming convention) and applies it to the new endpoint. Without the example, it would generate a generic Spring Boot controller.</p>
+      </div>
+
+      <div class="talk-point">
+        <h3>Chain-of-Thought Prompting</h3>
+        <p>Ask the model to reason step by step. This dramatically improves results on complex tasks like debugging, architecture decisions, and multi-step refactoring.</p>
+        <div class="code-block">
+<span class="comment">// Chain-of-thought: Step-by-step reasoning</span>
+<span class="string">"This React component re-renders excessively. Think step by step:
+1. First, identify all state variables and where they change
+2. Then, trace which props are passed to child components
+3. Check for missing memoization or unstable references
+4. Suggest specific fixes with code examples
+
+Here is the component:
+@ProductList.tsx"</span>
+        </div>
+
+        <div class="narration">
+          <strong>Talk track:</strong> "Chain-of-thought is your most powerful debugging technique. When you just say 'fix this bug,' the model often jumps to the most common cause and may miss the actual issue. When you say 'think step by step about why this could be happening,' it systematically works through possibilities. I've seen this turn a 50% success rate on debugging prompts into closer to 85%."
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Role Prompting</h3>
+        <p>Set a persona that shapes the model's response style and priorities. This is more impactful than many people expect.</p>
+        <div class="two-col">
+          <div>
+            <h4>For backend work</h4>
+            <div class="code-block">
+<span class="string">"You are a senior Java developer
+with 10 years of Spring Boot
+experience. You prioritize:
+- Constructor injection over field
+- Proper exception handling
+- Meaningful logging
+- Thread safety"</span>
+            </div>
+          </div>
+          <div>
+            <h4>For frontend work</h4>
+            <div class="code-block">
+<span class="string">"You are a senior React developer
+who follows modern best practices:
+- Functional components only
+- Custom hooks for shared logic
+- TypeScript strict mode
+- Accessibility (WCAG 2.1 AA)"</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>The Anatomy of a Great Prompt</h3>
+        <p>The best prompts combine four elements. Each one is optional, but the more you include, the better your results:</p>
+        <ol class="step-list">
+          <li>
+            <h4>Context</h4>
+            <p>What is the project? What files are relevant? What has been tried before? Use <code>@file</code> references and describe the architecture.</p>
+          </li>
+          <li>
+            <h4>Task</h4>
+            <p>What specifically do you want? Be precise. "Add error handling" is vague. "Add try-catch blocks to all service methods that call the repository layer, returning appropriate HTTP status codes" is specific.</p>
+          </li>
+          <li>
+            <h4>Constraints</h4>
+            <p>What rules must be followed? "Use constructor injection, not field injection." "Keep methods under 20 lines." "Don't add new dependencies." "Follow the existing patterns in <code>@UserService.java</code>."</p>
+          </li>
+          <li>
+            <h4>Output Format</h4>
+            <p>What should the response look like? "Show the complete file." "Just show the changed methods." "Include unit tests." "Explain your changes in comments."</p>
+          </li>
+        </ol>
+      </div>
+
+      <div class="callout callout-demo">
+        <h4>Live Demo</h4>
+        <p>Let's try this live in Cursor Chat. We will take a vague prompt, apply these four elements, and compare the output quality side by side. Open <code>CartService.java</code> and let's start with "refactor this" versus a well-structured prompt.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 4: Writing Effective Prompts for Java & React ===== -->
+<section class="section white-bg">
+  <div class="container">
+    <div class="talk-track">
+      <h2>Writing Effective Prompts for Java and React Development</h2>
+
+      <div class="talk-point">
+        <h3>Java-Specific Prompt Patterns</h3>
+        <p>Java and Spring Boot have strong conventions. Referencing them explicitly produces dramatically better results.</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h3>Reference the Framework</h3>
+            <div class="code-block">
+<span class="string">"Follow Spring Boot 3.x conventions.
+Use @Service, @Repository, @RestController.
+Use constructor injection (not @Autowired on fields)."</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Reference Existing Code</h3>
+            <div class="code-block">
+<span class="string">"Follow the same patterns used in
+@ProductService.java and
+@ProductController.java
+for the new CartService."</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Specify Exception Handling</h3>
+            <div class="code-block">
+<span class="string">"Use @GlobalExceptionHandler pattern
+from @GlobalExceptionHandler.java.
+Throw ResourceNotFoundException for
+missing entities."</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>React-Specific Prompt Patterns</h3>
+        <p>React has evolved significantly. Being explicit about which patterns you want prevents the model from generating class components or outdated practices.</p>
+
+        <div class="card-grid">
+          <div class="card">
+            <h3>Specify Component Style</h3>
+            <div class="code-block">
+<span class="string">"Use functional components with hooks.
+Use TypeScript with strict types.
+Export named components, not default."</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Reference Project Patterns</h3>
+            <div class="code-block">
+<span class="string">"Follow the existing patterns in
+@ProductList.tsx for data fetching.
+Use our CartContext from @CartContext.tsx
+for state management."</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Style Conventions</h3>
+            <div class="code-block">
+<span class="string">"Use CSS modules with BEM naming.
+Match the styling approach in
+@ProductCard.module.css.
+Include responsive breakpoints."</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Before/After: Prompt Quality Comparison</h3>
+
+        <div class="two-col">
+          <div>
+            <h4>Vague Prompt (Bad)</h4>
+            <div class="callout callout-warning" style="margin-top: 8px;">
+              <h4>Don't Do This</h4>
+              <div class="code-block" style="margin-top: 8px;">
+<span class="string">"Make a controller for orders"</span>
+              </div>
+              <p style="margin-top: 12px;">Problems: No framework specified, no conventions, no error handling guidance, no reference to existing patterns. The model guesses at everything.</p>
+            </div>
+          </div>
+          <div>
+            <h4>Structured Prompt (Good)</h4>
+            <div class="callout callout-insight" style="margin-top: 8px;">
+              <h4>Do This Instead</h4>
+              <div class="code-block" style="margin-top: 8px;">
+<span class="string">"Create an OrderController following the
+same patterns as @ProductController.java.
+
+Requirements:
+- POST /api/checkout/{sessionId} to place order
+- GET /api/checkout/orders/{orderId} for details
+- Use OrderService (constructor injection)
+- Return ResponseEntity with proper HTTP codes
+- Add input validation with @Valid
+- Include Javadoc comments
+- Follow @GlobalExceptionHandler.java patterns"</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="narration">
+          <strong>Talk track:</strong> "The difference between 'make a controller' and a well-crafted prompt is the difference between throwaway code and production-quality output. The vague prompt might give you something that compiles, but you'll spend 30 minutes fixing it. The structured prompt gives you something that's 90% ready for a PR. Over a full day of development, that difference compounds enormously."
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Common Mistakes to Avoid</h3>
+        <ul>
+          <li><strong>Being too vague</strong> -- "Fix the bug" tells the model nothing. "The addToCart method throws a NullPointerException when the product ID doesn't exist in the database" gives it what it needs.</li>
+          <li><strong>Not referencing existing code</strong> -- If you don't use <code>@file</code> references, the model generates generic code that doesn't match your project's patterns.</li>
+          <li><strong>Omitting constraints</strong> -- Without constraints, the model makes assumptions. It might use field injection when you want constructor injection, or add a new dependency when you want to use existing ones.</li>
+          <li><strong>Asking for too much at once</strong> -- "Build the entire checkout flow" is too broad. Break it into steps: first the service, then the controller, then the tests.</li>
+          <li><strong>Ignoring the output format</strong> -- If you don't specify, the model might explain the code instead of writing it, or write incomplete snippets instead of full files.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 5: AI Value vs. Human Judgment ===== -->
+<section class="section">
+  <div class="container">
+    <div class="talk-track">
+      <h2>Where AI Adds Value vs. Where Human Judgment is Critical</h2>
+
+      <div class="talk-point">
+        <h3>Where AI Excels</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Boilerplate Code</h3>
+            <p>CRUD controllers, DTOs, entity classes, configuration files. The model has seen thousands of these and generates them accurately.</p>
+          </div>
+          <div class="card">
+            <h3>Common Patterns</h3>
+            <p>Authentication middleware, pagination, sorting, filtering, error handling. Well-established patterns it has seen many times.</p>
+          </div>
+          <div class="card">
+            <h3>Refactoring</h3>
+            <p>Extracting methods, renaming variables, converting between patterns (callbacks to async/await, class to functional components). Mechanical transformations.</p>
+          </div>
+          <div class="card">
+            <h3>Test Generation</h3>
+            <p>Unit tests for existing code, especially happy-path cases. It can see the method signature and generate sensible test cases quickly.</p>
+          </div>
+          <div class="card">
+            <h3>Documentation</h3>
+            <p>Javadoc, JSDoc, README files, API documentation. It can read code and explain it clearly -- often better than the developer who wrote it.</p>
+          </div>
+          <div class="card">
+            <h3>Translation Between Languages</h3>
+            <p>Converting a Python script to Java, or a JavaScript snippet to TypeScript. Cross-language patterns it has seen in training data.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Where AI Struggles</h3>
+        <div class="card-grid">
+          <div class="card">
+            <h3>Novel Business Logic</h3>
+            <p>Your specific domain rules, edge cases that come from real-world usage, business requirements that aren't captured in code. The model has never seen YOUR business.</p>
+          </div>
+          <div class="card">
+            <h3>Security Decisions</h3>
+            <p>Authentication architecture, authorization rules, data privacy policies, compliance requirements. Getting security wrong has real consequences.</p>
+          </div>
+          <div class="card">
+            <h3>Architecture Choices</h3>
+            <p>Monolith vs. microservices, database selection, caching strategy, API design philosophy. These depend on your specific scale, team, and constraints.</p>
+          </div>
+          <div class="card">
+            <h3>Your Specific Domain</h3>
+            <p>Internal APIs, proprietary libraries, organizational conventions, deployment-specific requirements. None of this was in the training data.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>The 80/20 Rule of AI-Assisted Development</h3>
+        <p>AI gets you 80% of the way there. It generates the structure, fills in the boilerplate, follows the patterns. The remaining 20% -- review, edge cases, integration, domain-specific logic -- is where developers earn their keep.</p>
+
+        <div class="diagram">
+  AI Generates (80%)                  Developer Completes (20%)
+  ==========================          ==========================
+  Basic structure/scaffolding         Edge case handling
+  Common patterns                     Business logic validation
+  Boilerplate code                    Security review
+  Standard error handling             Performance optimization
+  Initial test cases                  Integration testing
+  Documentation drafts                Architecture decisions
+        </div>
+
+        <div class="narration">
+          <strong>Talk track:</strong> "The 80/20 breakdown is real, and it's why AI makes experienced developers more productive rather than replacing them. A junior developer using AI might accept the 80% as-is and ship buggy code. A senior developer uses AI for the 80% and then applies their judgment to the remaining 20% -- that's where years of experience matter. The review, the edge cases, the 'wait, what about concurrency?' moments. That's the 20% that separates production code from demo code."
+        </div>
+      </div>
+
+      <div class="callout callout-warning">
+        <h4>Critical Warning</h4>
+        <p><strong>Never ship AI-generated code without understanding it.</strong> If you can't explain what every line does, you shouldn't commit it. AI can introduce subtle bugs -- incorrect null handling, missing thread safety, security vulnerabilities that look correct at first glance. Treat every AI output like a pull request from a junior developer: read it carefully, test the edge cases, and verify it actually solves the right problem.</p>
+      </div>
+
+      <div class="talk-point">
+        <h3>The Reviewer Mindset</h3>
+        <p>The most productive way to use AI coding assistants is to adopt the <strong>reviewer mindset</strong>. Instead of writing code and then reviewing it, you are reviewing code as it's generated.</p>
+        <ul>
+          <li><strong>Read every line</strong> -- Don't just check if it compiles. Understand the logic.</li>
+          <li><strong>Question assumptions</strong> -- Why did it use this approach? Is there a simpler way?</li>
+          <li><strong>Check edge cases</strong> -- What happens with null input? Empty lists? Concurrent access?</li>
+          <li><strong>Verify error handling</strong> -- Does it fail gracefully? Are errors logged? Are user-facing messages appropriate?</li>
+          <li><strong>Test the boundaries</strong> -- The AI's test cases often only cover happy paths. Add the adversarial ones yourself.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SECTION 6: Model Selection Strategies ===== -->
+<section class="section white-bg">
+  <div class="container">
+    <div class="talk-track">
+      <h2>Model Selection Strategies</h2>
+
+      <div class="talk-point">
+        <h3>When to Use Which Model</h3>
+        <p>Cursor gives you access to multiple models, and choosing the right one for each task can save time and improve quality. The key tradeoff is always <strong>speed vs. quality vs. cost</strong>.</p>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Scenario</th>
+              <th>Recommended Model</th>
+              <th>Why</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Quick autocomplete, simple edits</td>
+              <td>Fast model (GPT-4o mini, Claude Haiku)</td>
+              <td>Speed matters more than depth. Simple tasks don't need large models.</td>
+            </tr>
+            <tr>
+              <td>Code generation, standard features</td>
+              <td>Mid-tier (GPT-4o, Claude Sonnet)</td>
+              <td>Good balance of quality and speed for everyday coding tasks.</td>
+            </tr>
+            <tr>
+              <td>Complex debugging, architecture</td>
+              <td>Top-tier (Claude Opus, o1/o3)</td>
+              <td>Needs deep reasoning, understanding of complex interactions.</td>
+            </tr>
+            <tr>
+              <td>Multi-file refactoring</td>
+              <td>Claude Sonnet / GPT-4o</td>
+              <td>Needs large context window and good code understanding.</td>
+            </tr>
+            <tr>
+              <td>Writing tests from specifications</td>
+              <td>Claude Sonnet</td>
+              <td>Good at understanding intent and generating comprehensive test cases.</td>
+            </tr>
+            <tr>
+              <td>Explaining legacy code</td>
+              <td>Claude Opus / Sonnet</td>
+              <td>Strong reasoning about code intent and documentation generation.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="talk-point">
+        <h3>Cursor's Model Selector</h3>
+        <p>In Cursor, you can switch models at any time during a chat session. The model selector is in the top-right of the Chat panel. The practical advice:</p>
+        <ul>
+          <li><strong>Start with a fast model</strong> for exploration and simple tasks</li>
+          <li><strong>Switch to a powerful model</strong> when you hit a complex problem or need higher quality output</li>
+          <li><strong>Use the fast model for Tab completions</strong> -- you want instant suggestions, not deep analysis</li>
+          <li><strong>Use a powerful model for Agent mode</strong> -- multi-step tasks need stronger reasoning to stay on track</li>
+        </ul>
+
+        <div class="callout callout-insight">
+          <h4>Key Insight</h4>
+          <p>Don't use a top-tier model for everything. It's slower and uses more of your Cursor quota. Reserve the powerful models for tasks that genuinely need them: complex debugging, architecture decisions, multi-file changes with tricky dependencies. For boilerplate, standard patterns, and simple edits, the fast models are equally capable and much quicker.</p>
+        </div>
+      </div>
+
+      <div class="talk-point">
+        <h3>Speed vs. Quality vs. Cost</h3>
+        <div class="diagram">
+  FAST MODELS                         POWERFUL MODELS
+  (Haiku, GPT-4o mini)               (Opus, o1/o3)
+  +-----------------+                 +-----------------+
+  | Speed:    *****  |                 | Speed:    **     |
+  | Quality:  ***    |                 | Quality:  *****  |
+  | Cost:     *      |                 | Cost:     *****  |
+  | Best for:        |                 | Best for:        |
+  |  - Autocomplete  |                 |  - Debugging     |
+  |  - Simple edits  |                 |  - Architecture  |
+  |  - Boilerplate   |                 |  - Complex logic |
+  +-----------------+                 +-----------------+
+
+  MID-TIER MODELS (Sonnet, GPT-4o)
+  +-----------------+
+  | Speed:    ****   |
+  | Quality:  ****   |
+  | Cost:     ***    |
+  | Best for:        |
+  |  - Daily coding  |
+  |  - Code gen      |
+  |  - Refactoring   |
+  +-----------------+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER ===== -->
+<footer class="page-footer">
+  <div class="container">
+    <div class="footer-logo">Deloitte<span>.</span> Digital</div>
+    <p>ShopCursor Workshop &mdash; AI-Assisted Development with Cursor IDE</p>
+    <p style="margin-top: 12px;"><a href="index.html">&larr; Back to Workshop Home</a></p>
+  </div>
+</footer>
+
+<!-- ===== PRESENTATION CONTROLS ===== -->
+<div class="pres-controls" id="presControls">
+  <button onclick="presNav(-1)" title="Previous section">&#x25B2;</button>
+  <button onclick="presNav(1)" title="Next section">&#x25BC;</button>
+  <button onclick="togglePresentation()" title="Exit presentation">&#x2715;</button>
+</div>
+
+<script>
+// ===== Presentation Mode =====
+let isPresentationMode = false;
+let currentSlide = 0;
+
+function getSlides() {
+  return document.querySelectorAll('.talk-track, .page-hero');
+}
+
+function togglePresentation() {
+  isPresentationMode = !isPresentationMode;
+  document.body.classList.toggle('presentation-mode', isPresentationMode);
+
+  if (isPresentationMode) {
+    currentSlide = 0;
+    scrollToSlide(0);
+    document.addEventListener('keydown', presKeyHandler);
+  } else {
+    document.removeEventListener('keydown', presKeyHandler);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+function scrollToSlide(index) {
+  const slides = getSlides();
+  if (index >= 0 && index < slides.length) {
+    currentSlide = index;
+    slides[index].scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function presNav(direction) {
+  const slides = getSlides();
+  const next = currentSlide + direction;
+  if (next >= 0 && next < slides.length) {
+    scrollToSlide(next);
+  }
+}
+
+function presKeyHandler(e) {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === ' ') {
+    e.preventDefault();
+    presNav(1);
+  } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+    e.preventDefault();
+    presNav(-1);
+  } else if (e.key === 'Escape') {
+    togglePresentation();
+  }
+}
+</script>
+
+</body>
+</html>

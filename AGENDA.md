@@ -30,7 +30,7 @@
 | Time | Session | Description |
 |------|---------|-------------|
 | 9:00 - 9:15 | **Day 2 Kickoff** | Recap Day 1, Day 2 overview |
-| 9:15 - 10:30 | **Session 3: MCP, Skills & Commands** | MCP servers, custom slash commands, Skills, Project Rules |
+| 9:15 - 10:30 | **Session 3: MCP, Skills, Commands & Subagents** | MCP servers, slash commands, Skills, Subagents, Plugins |
 | 10:30 - 10:45 | *Break* | |
 | 10:45 - 12:00 | **Session 4: Playwright + MCP** | AI-generated E2E tests, Playwright MCP, test debugging |
 | 12:00 - 1:00 | *Lunch* | |
@@ -39,7 +39,7 @@
 
 | Time | Session | Description |
 |------|---------|-------------|
-| 1:00 - 2:15 | **Session 5: AI Governance** | BugBot, code review, security, anti-patterns, Project Rules |
+| 1:00 - 2:15 | **Session 5: AI Governance** | BugBot, code review, security, anti-patterns, Hooks, Project Rules, Cursor security settings & data leakage prevention |
 | 2:15 - 2:30 | *Break* | |
 | 2:30 - 4:00 | **Day 2 Lab: E2E Testing** | Complete checkout tests, generate edge case tests |
 | 4:00 - 4:30 | **Workshop Wrap-up** | Final review, resources, Q&A |

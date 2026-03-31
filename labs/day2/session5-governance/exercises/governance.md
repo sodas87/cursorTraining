@@ -8,6 +8,7 @@ As AI-assisted development becomes more prevalent, it's crucial to establish gov
 - Security auditing
 - Identifying anti-patterns
 - Establishing team standards
+- **Cursor security settings and data leakage prevention**
 
 ## Why AI Governance Matters
 
@@ -17,6 +18,7 @@ AI tools like Cursor are powerful, but they can:
 - Create technical debt
 - Bypass security best practices
 - Make assumptions about requirements
+- **Send proprietary code and secrets to external LLM providers**
 
 **Your role as a developer**: Be the critical reviewer and decision-maker.
 
@@ -837,16 +839,345 @@ com.shopcursor
 - Follow Airbnb style guide
 ```
 
+## Exercise 5: Cursor Security Settings & Data Leakage Risks
+
+AI coding assistants introduce a new class of security concerns — your **source code, prompts, and context** are sent to external LLM providers. This exercise covers Cursor's built-in security controls and best practices for preventing data leakage.
+
+### Why This Matters
+
+When you use Cursor, the following data may leave your machine:
+
+| Data Type | When It's Sent | Where It Goes |
+|-----------|---------------|---------------|
+| Code in open files | Every prompt, autocomplete, Cmd+K | LLM provider (OpenAI, Anthropic, or Cursor's API) |
+| Codebase index | When indexing is enabled | Cursor's servers (for embeddings) |
+| Terminal output | Agent mode shell commands | LLM provider |
+| File contents | `@file` references, agent reads | LLM provider |
+| Error messages | Debugging prompts | LLM provider |
+| Chat history | Ongoing conversation | LLM provider |
+
+**Risk**: Proprietary code, secrets, API keys, PII, and internal business logic can leak to third-party servers.
+
+---
+
+### Part A: Cursor Privacy Settings
+
+Open **Cursor > Settings > Privacy** (or `Cmd+,` → search "privacy") and review these settings:
+
+#### 1. Privacy Mode
+
+| Setting | Behavior |
+|---------|----------|
+| **Privacy Mode: OFF** (default) | Code snippets may be stored by LLM providers for improvement |
+| **Privacy Mode: ON** | Code is sent for inference only — **not stored, not used for training** |
+
+> **Best practice**: Always enable Privacy Mode for proprietary/client code. Cursor states that with Privacy Mode on, no code is retained by any third party.
+
+**To enable:**
+- Settings → Privacy → Toggle **"Privacy Mode"** ON
+- Or in `settings.json`: `"cursor.privacy.mode": true`
+
+#### 2. Codebase Indexing
+
+Codebase indexing sends file contents to Cursor's servers to build a semantic search index used by `@codebase` queries.
+
+| Setting | What Happens |
+|---------|-------------|
+| **Indexing ON** | Files are chunked, embedded, and stored on Cursor's servers |
+| **Indexing OFF** | No codebase data leaves your machine (but `@codebase` won't work) |
+
+**To control:**
+- Settings → Features → **"Codebase Indexing"**
+- For sensitive projects, disable indexing entirely
+
+#### 3. Telemetry
+
+| Setting | What's Collected |
+|---------|-----------------|
+| **Telemetry ON** | Usage analytics, crash reports, feature usage |
+| **Telemetry OFF** | Nothing sent |
+
+**To disable:**
+- Settings → Privacy → Toggle telemetry OFF
+- Or `"telemetry.telemetryLevel": "off"` in `settings.json`
+
+---
+
+### Part B: `.cursorignore` — Preventing Sensitive Files from Reaching the LLM
+
+The `.cursorignore` file (placed at project root) tells Cursor to **never read, index, or send** matching files to any LLM. This is your most important defense against data leakage.
+
+**Create `.cursorignore` in your project root:**
+
+```gitignore
+# Secrets and credentials
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.jks
+credentials.json
+service-account.json
+**/secrets/
+
+# Infrastructure
+terraform.tfstate
+terraform.tfstate.backup
+*.tfvars
+docker-compose.override.yml
+
+# CI/CD secrets
+.github/secrets/
+.gitlab-ci-secrets/
+
+# Database
+*.sql.bak
+**/migrations/seed-data/
+
+# Client/proprietary data
+**/data/customers/
+**/data/exports/
+**/fixtures/real-data/
+
+# Internal documentation
+docs/internal/
+docs/architecture/threat-model*
+SECURITY.md
+
+# IDE and local config
+.cursor/mcp.json       # may contain API tokens
+.idea/
+```
+
+#### Your Task
+
+1. Create a `.cursorignore` file for the ShopCursor project
+2. Include at minimum: `.env`, `*.pem`, `*.key`, `credentials.json`, and any files containing real customer data
+3. Test it: open a file that matches your ignore patterns and try referencing it with `@file` — Cursor should refuse
+
+---
+
+### Part C: `.cursorindexingignore` — Controlling What Gets Indexed
+
+Separate from `.cursorignore`, the `.cursorindexingignore` file prevents files from being **indexed** (sent to Cursor's embedding servers) while still allowing them to be read locally in chat.
+
+```gitignore
+# Don't index large generated files
+**/dist/
+**/build/
+**/node_modules/
+**/*.min.js
+**/*.bundle.js
+
+# Don't index binary/media
+**/*.png
+**/*.jpg
+**/*.mp4
+**/*.woff2
+
+# Don't index test fixtures
+**/test/fixtures/large-*.json
+```
+
+> **Key difference**: `.cursorignore` = LLM never sees it. `.cursorindexingignore` = not indexed for `@codebase` search but can still be opened/referenced manually.
+
+---
+
+### Part D: MCP Server Security Risks
+
+MCP (Model Context Protocol) servers extend Cursor's capabilities, but they also expand the attack surface:
+
+#### Risks
+
+| Risk | Example |
+|------|---------|
+| **Token leakage** | API tokens in `.cursor/mcp.json` sent to LLM in error messages |
+| **Over-permissioned tools** | Filesystem MCP with access to `~/.ssh/` or `~/.aws/` |
+| **Tool injection** | Malicious MCP server returning crafted output to manipulate the agent |
+| **Unreviewed actions** | Agent calling MCP tools that modify production systems |
+
+#### Best Practices
+
+1. **Scope filesystem MCP servers narrowly:**
+   ```json
+   {
+     "filesystem": {
+       "command": "npx",
+       "args": ["-y", "@modelcontextprotocol/server-filesystem",
+                "./backend/src", "./frontend/src"]
+     }
+   }
+   ```
+   Never give access to `~/`, `/`, or directories containing secrets.
+
+2. **Never put raw tokens in `mcp.json`** — use environment variables:
+   ```json
+   {
+     "github": {
+       "command": "npx",
+       "args": ["-y", "@modelcontextprotocol/server-github"],
+       "env": {
+         "GITHUB_TOKEN": "${GITHUB_TOKEN}"
+       }
+     }
+   }
+   ```
+
+3. **Audit MCP tool calls** — use hooks to log every MCP execution:
+   ```json
+   {
+     "event": "beforeMCPExecution",
+     "scripts": [{ "command": ".cursor/hooks/audit-mcp.sh" }]
+   }
+   ```
+
+4. **Review MCP server source code** before adding third-party servers
+
+---
+
+### Part E: Agent Mode Security Considerations
+
+Agent mode is powerful but has elevated risk because the AI can autonomously:
+- Read any file on your filesystem
+- Execute shell commands
+- Make network requests
+- Modify multiple files in sequence
+
+#### Guardrails
+
+| Control | How to Set Up |
+|---------|---------------|
+| **Shell command blocking** | Hook on `beforeShellExecution` (see `block-dangerous.sh`) |
+| **File read restrictions** | `.cursorignore` for sensitive paths |
+| **Command approval** | Set Agent mode to require confirmation for shell commands |
+| **Secrets redaction** | Hook on `beforeReadFile` to block `.env`, `*.pem` |
+| **Network restrictions** | Corporate firewall / proxy rules for `api.cursor.com`, LLM endpoints |
+
+#### Agent Mode Permission Settings
+
+In Cursor Settings → Features → Agent:
+- **"Always allow"** — Agent runs commands without asking (fast but risky)
+- **"Ask for approval"** — Agent pauses for your confirmation before shell commands (recommended)
+- **"Never allow"** — Agent cannot run shell commands
+
+> **Best practice**: Use **"Ask for approval"** and review every command, especially those involving `curl`, `git push`, database commands, or package installs.
+
+---
+
+### Part F: Team & Enterprise Security Checklist
+
+Use this checklist when rolling out Cursor to your team:
+
+#### Before Onboarding
+
+- [ ] **Enable Privacy Mode** across all team members (enforce via admin settings if on Business plan)
+- [ ] **Create `.cursorignore`** in every repository — commit it to source control
+- [ ] **Create `.cursorindexingignore`** to exclude build artifacts and large files
+- [ ] **Audit `.cursor/mcp.json`** — ensure no secrets are hardcoded
+- [ ] **Set up `block-dangerous.sh`** hook to prevent destructive commands
+- [ ] **Set up secrets redaction hook** to prevent `.env` / credential files from being read
+
+#### Ongoing Governance
+
+- [ ] **Review agent activity logs** periodically for unexpected file reads or commands
+- [ ] **Rotate any API keys** that may have been exposed in prompts or error messages
+- [ ] **Disable codebase indexing** for repositories containing sensitive IP or customer data
+- [ ] **Pin MCP server versions** — don't use `npx -y` with `latest` in production
+- [ ] **Educate developers**: never paste secrets, PII, or credentials into chat prompts
+- [ ] **Disable telemetry** if required by compliance (SOC 2, HIPAA, etc.)
+
+#### Network & Compliance
+
+- [ ] **Allowlist endpoints**: `api2.cursor.sh`, `api.openai.com`, `api.anthropic.com`
+- [ ] **Block endpoints** if using only specific providers
+- [ ] **Proxy all LLM traffic** through corporate proxy for logging if required
+- [ ] **Document data flow**: where code goes, which providers, retention policies
+- [ ] **Review Cursor's privacy policy** and ToS with legal/compliance team
+
+---
+
+### Part G: Common Data Leakage Scenarios
+
+| Scenario | How It Happens | Prevention |
+|----------|---------------|------------|
+| Secrets in autocomplete context | Cursor reads `.env` to provide context | `.cursorignore` |
+| API key in error message | Agent runs a failing `curl` with token in URL | Secrets redaction hook |
+| Proprietary algorithm indexed | Codebase indexing sends embeddings to Cursor | `.cursorindexingignore` or disable indexing |
+| PII in test fixtures | Agent reads `test/fixtures/users.json` with real data | `.cursorignore`, use synthetic data |
+| Credentials in MCP config | `mcp.json` with hardcoded tokens visible to agent | Use env vars, add `mcp.json` to `.cursorignore` |
+| Internal docs in prompt | Developer pastes confidential doc into chat | Training & awareness |
+| Production DB credentials | Agent reads `application-prod.yml` | `.cursorignore`, separate prod config |
+
+### Exercise: Identify and Fix Leakage Risks
+
+Look at the ShopCursor project and identify potential data leakage risks:
+
+1. Check if `.env` files exist or are referenced
+2. Review `.cursor/mcp.json` for hardcoded tokens
+3. Check if any test fixtures contain realistic data
+4. Verify that `application.properties` doesn't contain production credentials
+5. Create a `.cursorignore` file that addresses all risks you find
+
+<details>
+<summary>Click to reveal example .cursorignore for ShopCursor</summary>
+
+```gitignore
+# Environment and secrets
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+
+# MCP config (may contain API tokens)
+.cursor/mcp.json
+
+# Database files
+*.db
+*.sqlite
+
+# IDE secrets
+.idea/
+*.iml
+
+# Production configs
+**/application-prod.*
+**/application-staging.*
+
+# Build outputs (reduce noise, not security)
+**/target/
+**/dist/
+**/node_modules/
+**/build/
+```
+
+</details>
+
+---
+
+## Exercise 6: Agent Hooks for Governance
+
+Hooks are a key governance mechanism — see the dedicated **[Hooks Exercise](hooks.md)** for hands-on exercises covering:
+- Auto-formatting after agent edits
+- Blocking dangerous shell commands
+- Audit logging for compliance
+- Secrets redaction
+
 ## Key Takeaways
 
 1. **AI is a tool, not a replacement**: Always review and understand generated code
 2. **Security first**: Never compromise on security, even for speed
-3. **Establish standards**: Use `.cursorrules` to guide AI behavior
-4. **Review everything**: Treat AI code like junior developer code
-5. **Build knowledge**: Learn from good AI generations, fix bad ones
-6. **Iterate**: Improve prompts and rules over time
-7. **Team alignment**: Share .cursorrules across the team
-8. **Document decisions**: Explain why certain patterns are preferred
+3. **Establish standards**: Use Project Rules (`.cursor/rules/`) to guide AI behavior
+4. **Use hooks for guardrails**: Auto-format, block dangerous commands, audit agent actions
+5. **Review everything**: Treat AI code like junior developer code
+6. **Build knowledge**: Learn from good AI generations, fix bad ones
+7. **Iterate**: Improve prompts, rules, and hooks over time
+8. **Team alignment**: Share `.cursor/` config (rules, hooks, commands, skills) across the team
+9. **Document decisions**: Explain why certain patterns are preferred
+10. **Control data flow**: Use Privacy Mode, `.cursorignore`, and indexing controls to prevent sensitive data from leaving your machine
+11. **Secure MCP servers**: Scope narrowly, use env vars for tokens, audit tool calls
+12. **Educate your team**: Data leakage prevention requires awareness — technical controls alone aren't enough
 
 ## Resources
 
@@ -854,3 +1185,6 @@ com.shopcursor
 - [Java Secure Coding Guidelines](https://www.oracle.com/java/technologies/javase/seccodeguide.html)
 - [Spring Security Reference](https://docs.spring.io/spring-security/reference/)
 - [Code Review Best Practices](https://google.github.io/eng-practices/review/)
+- [Cursor Privacy Policy](https://www.cursor.com/privacy)
+- [Cursor Security Documentation](https://docs.cursor.com/privacy)
+- [MCP Specification](https://modelcontextprotocol.io/)

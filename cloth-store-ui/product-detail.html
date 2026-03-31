@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Product — Elegant Vogue</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/layout.css">
+  <link rel="stylesheet" href="css/typography.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/pages.css">
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="site-nav">
+    <a href="index.html" class="site-nav__logo">Elegant Vogue</a>
+    <div class="site-nav__links">
+      <a href="products.html">Men</a>
+      <a href="products.html">Women</a>
+      <a href="products.html">Kids</a>
+    </div>
+    <div class="site-nav__actions">
+      <a href="products.html">Search</a>
+      <a href="cart.html" class="site-nav__cart">
+        Cart
+        <span class="site-nav__cart-count" id="cart-count" style="display:none;">0</span>
+      </a>
+    </div>
+    <button class="site-nav__hamburger" id="hamburger-btn" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobile-menu">
+    <button class="mobile-menu__close" id="mobile-menu-close" aria-label="Close menu">&times;</button>
+    <a href="products.html">Men</a>
+    <a href="products.html">Women</a>
+    <a href="products.html">Kids</a>
+    <a href="cart.html">Cart</a>
+  </div>
+
+  <!-- Product Detail -->
+  <main class="product-detail-page container">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a>
+      <span class="breadcrumb__separator">/</span>
+      <a href="products.html">Products</a>
+      <span class="breadcrumb__separator">/</span>
+      <span class="breadcrumb__current" id="breadcrumb-name">Product</span>
+    </div>
+
+    <div class="product-detail-layout">
+      <!-- Gallery -->
+      <div class="product-gallery">
+        <div class="product-gallery__main" id="main-image">
+          <div class="product-card__placeholder" id="main-placeholder" style="width:100%;height:100%;">
+            Product Image
+          </div>
+        </div>
+        <div class="product-gallery__thumbs" id="thumb-gallery">
+          <div class="product-gallery__thumb active" style="background: var(--color-neutral-100);"></div>
+          <div class="product-gallery__thumb" style="background: var(--color-neutral-200);"></div>
+          <div class="product-gallery__thumb" style="background: var(--color-neutral-50);"></div>
+          <div class="product-gallery__thumb" style="background: var(--color-cream-dark);"></div>
+        </div>
+      </div>
+
+      <!-- Product Info -->
+      <div class="product-info">
+        <h1 class="product-info__title" id="product-title">Basic Slim Fit T-Shirt</h1>
+        <p class="product-info__price" id="product-price">$ 199</p>
+        <p class="product-info__tax">MRP incl. of all taxes</p>
+
+        <p class="product-info__section-label">Size</p>
+        <div class="size-selector" id="size-selector">
+          <button class="size-selector__btn" data-size="XS">XS</button>
+          <button class="size-selector__btn active" data-size="S">S</button>
+          <button class="size-selector__btn" data-size="M">M</button>
+          <button class="size-selector__btn" data-size="L">L</button>
+          <button class="size-selector__btn" data-size="XL">XL</button>
+        </div>
+
+        <p class="product-info__section-label">Quantity</p>
+        <div class="quantity-selector">
+          <button class="quantity-selector__btn" id="qty-minus">&minus;</button>
+          <span class="quantity-selector__value" id="qty-value">1</span>
+          <button class="quantity-selector__btn" id="qty-plus">+</button>
+        </div>
+
+        <button class="add-to-cart-btn" id="add-to-cart-btn">Add to Cart</button>
+
+        <p class="product-info__description" id="product-description">
+          A wardrobe essential crafted from premium cotton. This slim-fit t-shirt features a clean silhouette, ribbed crew neck, and a soft hand feel that only gets better with each wash. Pair it with chinos for a refined casual look or layer under a blazer for smart-casual occasions.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="site-footer__grid">
+        <div>
+          <div class="site-footer__brand">Elegant Vogue</div>
+          <p class="site-footer__tagline">Curating timeless fashion with a modern edge.</p>
+        </div>
+        <div>
+          <div class="site-footer__col-title">Shop</div>
+          <div class="site-footer__links">
+            <a href="products.html">Men</a>
+            <a href="products.html">Women</a>
+            <a href="products.html">Kids</a>
+          </div>
+        </div>
+        <div>
+          <div class="site-footer__col-title">Help</div>
+          <div class="site-footer__links">
+            <a href="#">Customer Service</a>
+            <a href="#">Returns</a>
+          </div>
+        </div>
+        <div>
+          <div class="site-footer__col-title">About</div>
+          <div class="site-footer__links">
+            <a href="#">Our Story</a>
+          </div>
+        </div>
+      </div>
+      <div class="site-footer__bottom">
+        <span class="site-footer__copyright">&copy; 2024 elegant vogue &mdash; all rights reserved</span>
+        <div class="site-footer__socials">
+          <a href="#">IG</a>
+          <a href="#">TW</a>
+          <a href="#">PT</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="js/cart.js"></script>
+  <script src="js/navigation.js"></script>
+  <script src="js/product-detail.js"></script>
+</body>
+</html>

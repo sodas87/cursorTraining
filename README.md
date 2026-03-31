@@ -60,9 +60,13 @@ cursorTraining/
 ├── .cursorrules                  # Legacy coding standards (deprecated)
 ├── .cursor/
 │   ├── mcp.json                  # MCP server configurations
+│   ├── hooks.json                # Agent lifecycle hooks configuration
+│   ├── hooks/                    # Hook scripts (format-on-edit, block-dangerous)
 │   ├── rules/                    # Project Rules (.mdc) — auto-applied standards
 │   ├── commands/                 # Custom slash commands (/review, /add-endpoint)
-│   └── agents/                   # Subagent definitions (refactor-agent)
+│   ├── agents/                   # Subagent definitions (refactor-agent, verify-agent)
+│   └── skills/                   # Skill definitions (add-feature)
+│       └── add-feature/SKILL.md
 │
 ├── backend/                      # Java Spring Boot API
 │   ├── pom.xml
@@ -128,11 +132,12 @@ cursorTraining/
 
 ### Day 2: Advanced Tooling
 
-4. **Session 3 - MCP, Skills & Commands** (`labs/day2/session3-mcp-architecture/`)
+4. **Session 3 - MCP, Skills, Commands & Subagents** (`labs/day2/session3-mcp-architecture/`)
    - Understand MCP protocol and ecosystem
    - Configure filesystem and GitHub MCP servers
    - Build a custom MCP server
-   - Create custom slash commands and Skills
+   - Create custom slash commands, Skills, and Subagents
+   - Understand the `.cursor/` ecosystem (commands vs skills vs rules vs hooks)
 
 5. **Session 4 - Playwright + MCP** (`labs/day2/session4-playwright-mcp/`)
    - Use Playwright MCP for AI-driven test generation
@@ -142,6 +147,7 @@ cursorTraining/
    - BugBot automated PR review and "Fix in Cursor" workflow
    - Review AI-generated code for quality and security
    - Identify anti-patterns in AI-assisted development
+   - Agent Hooks for guardrails (auto-format, block dangerous commands, audit logging)
    - Project Rules best practices
 
 7. **Lab - E2E Testing** (`labs/day2/lab/`)

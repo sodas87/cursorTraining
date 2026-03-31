@@ -23,6 +23,9 @@
       "env": {
         "GITHUB_PERSONAL_ACCESS_TOKEN": "<your-github-token>"
       }
+    },
+    "figma": {
+      "url": "https://mcp.figma.com/mcp"
     }
   }
 }
