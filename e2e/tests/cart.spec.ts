@@ -29,8 +29,26 @@ test.describe('Cart Page', () => {
 
     const cartPage = new CartPage(page);
     await cartPage.increaseQuantity(2);
-    const qty = await cartPage.getQuantity(2);
-    expect(qty).toBe('2');
+    await expect(page.getByTestId('quantity-2')).toHaveText('2');
+  });
+
+  test('should add hoodie, update quantity to 2, and verify total', async ({ page }) => {
+    const productsPage = new ProductsPage(page);
+    await productsPage.goto();
+    await productsPage.addToCart(1);
+    await productsPage.goToCart();
+
+    const cartPage = new CartPage(page);
+    const cartItem = await cartPage.getCartItem(1);
+    await expect(cartItem).toBeVisible();
+
+    await expect(page.getByTestId('quantity-1')).toHaveText('1');
+    await expect(cartPage.cartTotal).toContainText('$59.99');
+
+    await cartPage.increaseQuantity(1);
+
+    await expect(page.getByTestId('quantity-1')).toHaveText('2');
+    await expect(cartPage.cartTotal).toContainText('$119.98');
   });
 
   test('should remove item from cart', async ({ page }) => {

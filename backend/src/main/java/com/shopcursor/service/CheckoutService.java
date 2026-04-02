@@ -63,8 +63,11 @@ public class CheckoutService {
         return savedOrder;
     }
 
+    @Transactional(readOnly = true)
     public Order getOrder(Long orderId) {
-        return orderRepository.findById(orderId)
+        Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+        order.getItems().size();
+        return order;
     }
 }

@@ -1,12 +1,12 @@
 .order-confirmation {
   max-width: 600px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: var(--space-800);
   text-align: center;
 }
 
 .confirmation-header {
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-800);
 }
 
 .check-icon {
@@ -15,93 +15,94 @@
   justify-content: center;
   width: 64px;
   height: 64px;
-  background-color: #4caf50;
-  color: white;
-  border-radius: 50%;
-  font-size: 2rem;
-  margin-bottom: 1rem;
+  background-color: var(--color-positive);
+  color: var(--color-text-on-dark);
+  border-radius: var(--radius-full);
+  font-size: var(--text-2xl);
+  margin-bottom: var(--space-400);
 }
 
 .confirmation-header h1 {
-  color: #1a1a2e;
-  margin: 0.5rem 0;
+  color: var(--color-text-primary);
+  margin: var(--space-200) 0;
 }
 
 .confirmation-header p {
-  color: #666;
-  font-size: 1.1rem;
+  color: var(--color-text-secondary);
+  font-size: var(--text-base);
 }
 
 .order-details {
-  background: white;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  background: var(--color-bg-surface);
+  border-radius: var(--radius-200);
+  padding: var(--space-600);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
   text-align: left;
-  margin-bottom: 2rem;
+  margin-bottom: var(--space-800);
 }
 
 .order-details h2 {
-  color: #1a1a2e;
-  margin: 0 0 0.5rem;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-200);
 }
 
 .order-status {
-  color: #4caf50;
-  font-weight: 600;
-  margin-bottom: 1rem;
+  color: var(--color-positive);
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-400);
 }
 
 .order-items-list {
-  border-top: 1px solid #f0f0f0;
-  padding-top: 1rem;
+  border-top: 1px solid var(--gray-200);
+  padding-top: var(--space-400);
 }
 
 .order-item-row {
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem 0;
-  color: #666;
+  padding: var(--space-200) 0;
+  color: var(--color-text-secondary);
 }
 
 .order-total-row {
   display: flex;
   justify-content: space-between;
-  padding-top: 1rem;
-  margin-top: 0.5rem;
-  border-top: 2px solid #f0f0f0;
-  font-size: 1.2rem;
-  font-weight: bold;
-  color: #1a1a2e;
+  padding-top: var(--space-400);
+  margin-top: var(--space-200);
+  border-top: 2px solid var(--gray-200);
+  font-size: var(--text-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
 }
 
 .shipping-info {
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid #f0f0f0;
+  margin-top: var(--space-600);
+  padding-top: var(--space-400);
+  border-top: 1px solid var(--gray-200);
 }
 
 .shipping-info h3 {
-  margin: 0 0 0.5rem;
-  color: #1a1a2e;
+  margin: 0 0 var(--space-200);
+  color: var(--color-text-primary);
 }
 
 .shipping-info p {
-  margin: 0.25rem 0;
-  color: #666;
+  margin: var(--space-100) 0;
+  color: var(--color-text-secondary);
 }
 
 .back-to-shop-btn {
   display: inline-block;
-  background-color: #e94560;
-  color: white;
+  background-color: var(--color-bg-accent);
+  color: var(--color-text-on-dark);
   text-decoration: none;
-  padding: 0.75rem 2rem;
-  border-radius: 8px;
-  font-weight: 600;
+  padding: var(--space-300) var(--space-800);
+  border-radius: var(--radius-200);
+  font-weight: var(--font-weight-semibold);
   transition: background-color 0.2s;
 }
 
 .back-to-shop-btn:hover {
-  background-color: #c73652;
+  background-color: var(--color-bg-accent-hover);
 }

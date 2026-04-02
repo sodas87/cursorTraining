@@ -1,11 +1,11 @@
 .header {
-  background-color: #1a1a2e;
-  color: white;
-  padding: 1rem 2rem;
+  background-color: var(--color-bg-header);
+  color: var(--color-text-on-dark);
+  padding: var(--space-400) var(--space-800);
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: var(--shadow-md);
 }
 
 .header-content {
@@ -17,27 +17,27 @@
 }
 
 .logo {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #e94560;
+  font-size: var(--text-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-on-dark);
   text-decoration: none;
 }
 
 .nav {
   display: flex;
-  gap: 1.5rem;
+  gap: var(--space-600);
   align-items: center;
 }
 
 .nav a {
-  color: white;
+  color: var(--color-text-on-dark);
   text-decoration: none;
-  font-weight: 500;
-  transition: color 0.2s;
+  font-weight: var(--font-weight-medium);
+  transition: opacity 0.2s;
 }
 
 .nav a:hover {
-  color: #e94560;
+  opacity: 0.75;
 }
 
 .cart-link {
@@ -45,10 +45,10 @@
 }
 
 .cart-badge {
-  background-color: #e94560;
-  color: white;
-  font-size: 0.75rem;
-  padding: 0.15rem 0.5rem;
-  border-radius: 999px;
-  margin-left: 0.25rem;
+  background-color: var(--color-danger);
+  color: var(--color-text-on-dark);
+  font-size: var(--text-xs);
+  padding: var(--space-050) var(--space-200);
+  border-radius: var(--radius-full);
+  margin-left: var(--space-100);
 }

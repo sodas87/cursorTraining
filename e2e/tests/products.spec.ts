@@ -10,20 +10,17 @@ test.describe('Products Page', () => {
   });
 
   test('should display all products', async () => {
-    const cards = await productsPage.getProductCards();
-    expect(cards.length).toBe(8);
+    await expect(productsPage.productGrid.locator('.product-card')).toHaveCount(8);
   });
 
   test('should filter products by category', async () => {
     await productsPage.selectCategory('Apparel');
-    const cards = await productsPage.getProductCards();
-    expect(cards.length).toBe(2);
+    await expect(productsPage.productGrid.locator('.product-card')).toHaveCount(2);
   });
 
   test('should search products by name', async () => {
     await productsPage.searchFor('mug');
-    const cards = await productsPage.getProductCards();
-    expect(cards.length).toBe(1);
+    await expect(productsPage.productGrid.locator('.product-card')).toHaveCount(1);
   });
 
   test('should show "All" category by default', async ({ page }) => {
